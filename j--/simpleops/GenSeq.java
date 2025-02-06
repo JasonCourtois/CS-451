@@ -6,6 +6,8 @@ import static jminusminus.CLConstants.*;
 
 public class GenSeq {
     public static void main(String[] args) {
-	...
+        CLEmitter myClass = new CLEmitter(true);
+        myClass.addClass(null, "Seq", "Object", null, false);
+        return;
     }
 }
