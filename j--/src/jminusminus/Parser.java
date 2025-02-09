@@ -758,7 +758,7 @@ class Parser {
      * Parses a multiplicative expression and returns an AST for it.
      *
      * <pre>
-     *   multiplicativeExpression ::= unaryExpression { STAR unaryExpression }
+     *   multiplicativeExpression ::= unaryExpression { (DIV | STAR) unaryExpression }
      * </pre>
      *
      * @return an AST for a multiplicative expression.
@@ -770,6 +770,8 @@ class Parser {
         while (more) {
             if (have(STAR)) {
                 lhs = new JMultiplyOp(line, lhs, unaryExpression());
+            } else if (have(DIV)) {
+                lhs = new JDivideOp(line, lhs, unaryExpression());
             } else {
                 more = false;
             }

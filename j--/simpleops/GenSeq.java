@@ -39,33 +39,33 @@ public class GenSeq {
 
         // int step = Integer.parseInt(args[1]);
         e.addNoArgInstruction(ALOAD_0);
-        e.addNoArgInstruction(ICONST_1);    // need index 1 from args
+        e.addNoArgInstruction(ICONST_1);    // Need index 1 from args
         e.addNoArgInstruction(AALOAD);
         e.addMemberAccessInstruction(INVOKESTATIC, "java/lang/Integer", "parseInt", "(Ljava/lang/String;)I");
         e.addNoArgInstruction(ISTORE_2);
 
         // int stop = Integer.parseInt(args[2]);
         e.addNoArgInstruction(ALOAD_0);
-        e.addNoArgInstruction(ICONST_2);    // need index 2 from args
+        e.addNoArgInstruction(ICONST_2);    // Need index 2 from args
         e.addNoArgInstruction(AALOAD);
         e.addMemberAccessInstruction(INVOKESTATIC, "java/lang/Integer", "parseInt", "(Ljava/lang/String;)I");
         e.addNoArgInstruction(ISTORE_3);
 
+        // Below is code for while (stop > start)
         // Here is where the start of while loop is.
         e.addLabel("LoopStart");
-        // Condition for while loop
         // put start and stop onto the stack, if stop is less than start, jump to end.
         e.addNoArgInstruction(ILOAD_1); // Start
         e.addNoArgInstruction(ILOAD_3); // Stop
         
-        e.addBranchInstruction(IF_ICMPGT, "end");
+        e.addBranchInstruction(IF_ICMPGT, "End");
 
         // Code for printing start, stored at offset 1
         // Get System.out on our stack
         e.addMemberAccessInstruction(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-        // Creates a new string buffer, puts refrence on top of stack.
+        // Creates a new string buffer, puts reference on top of stack.
         e.addReferenceInstruction(NEW, "java/lang/StringBuffer");
-        // Duplicates the string buffer refrence.
+        // Duplicates the string buffer reference.
         e.addNoArgInstruction(DUP);
         // Calls the constructor of the string buffer, this pops the top reference of the string buffer from stack.
         e.addMemberAccessInstruction(INVOKESPECIAL, "java/lang/StringBuffer", "<init>", "()V");
@@ -81,15 +81,16 @@ public class GenSeq {
         e.addMemberAccessInstruction(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
 
         // Below is the code for adding step to start
-        e.addNoArgInstruction(ILOAD_1); // Start
-        e.addNoArgInstruction(ILOAD_2); // Step
-        e.addNoArgInstruction(IADD);    // Add them
-        e.addNoArgInstruction(ISTORE_1); // Store back in start
+        e.addNoArgInstruction(ILOAD_1); // Put start on stack
+        e.addNoArgInstruction(ILOAD_2); // Put step on stack
+        e.addNoArgInstruction(IADD);    // Add them, put result on stack
+        e.addNoArgInstruction(ISTORE_1); // Store result back in start
 
-        // Loop to start
+        // End of while loop, jump back to start
         e.addBranchInstruction(GOTO, "LoopStart");
-        e.addLabel("end");
-        
+        // While loop jumps here when stop < start
+        e.addLabel("End");
+        // return at function end.
         e.addNoArgInstruction(RETURN);
         e.write();
     }

@@ -186,6 +186,11 @@ enum TokenKind {
     STAR("*"),
 
     /**
+     * Operator, "/".
+     */
+    DIV("/"),
+
+    /**
      * Separator, ",".
      */
     COMMA(","),

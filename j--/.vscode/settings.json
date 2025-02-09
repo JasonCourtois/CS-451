@@ -6,6 +6,7 @@
         "lib/javacc.jar"
     ],
     "cSpell.words": [
+        "codegen",
         "jminusminus",
         "Ljava"
     ],

@@ -97,7 +97,7 @@ class Scanner {
                         nextCh();
                     }
                 } else {
-                    reportScannerError("operator / is not supported in j--");
+                    return new TokenInfo(DIV, line);
                 }
             } else {
                 moreWhiteSpace = false;
