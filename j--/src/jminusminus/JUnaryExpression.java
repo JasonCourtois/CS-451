@@ -255,7 +255,11 @@ class JUnaryPlusOp extends JUnaryExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        // Get context fom operand, and then verify that it is an integer.
+        operand = operand.analyze(context);
+        operand.type().mustMatchExpected(line(), Type.INT);
+        // Once we have asserted operand is an int, set the result type to int.
+        type = Type.INT;
         return this;
     }
 
@@ -263,7 +267,9 @@ class JUnaryPlusOp extends JUnaryExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        operand.codegen(output);
+        // Here nothing really needs to be done. In analyze we verified that the operand was an integer,
+        // so nothing else needs to be done by the unary plus.
     }
 }
 

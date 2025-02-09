@@ -196,6 +196,11 @@ enum TokenKind {
     REMAINDER("%"),
 
     /**
+     * Operator, "?".
+     */
+    CONDITIONAL("?"),
+
+    /**
      * Separator, ",".
      */
     COMMA(","),

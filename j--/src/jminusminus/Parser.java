@@ -659,6 +659,11 @@ class Parser {
         }
     }
 
+    private JExpression conditionalExpression() {
+        int line = scanner.token().line();
+        // TODO : something here idk
+    }
+
     /**
      * Parses a conditional-and expression and returns an AST for it.
      *
@@ -798,6 +803,8 @@ class Parser {
             return new JPreIncrementOp(line, unaryExpression());
         } else if (have(MINUS)) {
             return new JNegateOp(line, unaryExpression());
+        } else if (have(PLUS)) {
+            return new JUnaryPlusOp(line, unaryExpression());
         } else {
             return simpleUnaryExpression();
         }

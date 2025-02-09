@@ -158,6 +158,9 @@ class Scanner {
             case '%':
                 nextCh();
                 return new TokenInfo(REMAINDER, line);
+            case '?':
+                nextCh();
+                return new TokenInfo(CONDITIONAL, line);
             case '=':
                 nextCh();
                 if (ch == '=') {
