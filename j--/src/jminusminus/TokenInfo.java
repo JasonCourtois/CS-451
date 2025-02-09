@@ -191,6 +191,11 @@ enum TokenKind {
     DIV("/"),
 
     /**
+     * Operator, "%".
+     */
+    REMAINDER("%"),
+
+    /**
      * Separator, ",".
      */
     COMMA(","),

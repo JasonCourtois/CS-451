@@ -3,6 +3,7 @@ package jminusminus;
 import static jminusminus.CLConstants.IADD;
 import static jminusminus.CLConstants.IDIV;
 import static jminusminus.CLConstants.IMUL;
+import static jminusminus.CLConstants.IREM;
 import static jminusminus.CLConstants.ISUB;
 
 /**
@@ -192,10 +193,13 @@ class JDivideOp extends JBinaryExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
+        // Analyze left and right hand side.
         lhs = (JExpression) lhs.analyze(context);
         rhs = (JExpression) rhs.analyze(context);
+        // Verify that both sides are integers.
         lhs.type().mustMatchExpected(line(), Type.INT);
         rhs.type().mustMatchExpected(line(), Type.INT);
+        // Assert that the result of this division is an integer.
         type = Type.INT;
         return this;
     }
@@ -204,6 +208,7 @@ class JDivideOp extends JBinaryExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
+        // Run codegen on each side, then run integer division instruction.
         lhs.codegen(output);
         rhs.codegen(output);
         output.addNoArgInstruction(IDIV);
@@ -229,7 +234,14 @@ class JRemainderOp extends JBinaryExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        // Analyze left and right hand side.
+        lhs = (JExpression) lhs.analyze(context);
+        rhs = (JExpression) rhs.analyze(context);
+        // Verify that both sides are integers.
+        lhs.type().mustMatchExpected(line(), Type.INT);
+        rhs.type().mustMatchExpected(line(), Type.INT);
+        // Assert that the result of this division is an integer.
+        type = Type.INT;
         return this;
     }
 
@@ -237,6 +249,9 @@ class JRemainderOp extends JBinaryExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        // Run codegen on each side, then run integer remainder instruction.
+        lhs.codegen(output);
+        rhs.codegen(output);
+        output.addNoArgInstruction(IREM);
     }
 }
