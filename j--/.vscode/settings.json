@@ -5,4 +5,8 @@
         "lib/j--.jar",
         "lib/javacc.jar"
     ],
+    "cSpell.words": [
+        "jminusminus",
+        "Ljava"
+    ],
 }
