@@ -792,6 +792,7 @@ class Parser {
      * <pre>
      *   unaryExpression ::= INC unaryExpression
      *                     | MINUS unaryExpression
+     *                     | PLUS unaryExpression
      *                     | simpleUnaryExpression
      * </pre>
      *
