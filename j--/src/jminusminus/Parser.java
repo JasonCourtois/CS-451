@@ -642,14 +642,14 @@ class Parser {
      * Parses an assignment expression and returns an AST for it.
      *
      * <pre>
-     *   assignmentExpression ::= conditionalAndExpression [ ( ASSIGN | PLUS_ASSIGN ) assignmentExpression ]
+     *   assignmentExpression ::= conditionalExpression [ ( ASSIGN | PLUS_ASSIGN ) assignmentExpression ]
      * </pre>
      *
      * @return an AST for an assignment expression.
      */
     private JExpression assignmentExpression() {
         int line = scanner.token().line();
-        JExpression lhs = conditionalAndExpression();
+        JExpression lhs = conditionalExpression();
         if (have(ASSIGN)) {
             return new JAssignOp(line, lhs, assignmentExpression());
         } else if (have(PLUS_ASSIGN)) {
@@ -659,9 +659,30 @@ class Parser {
         }
     }
 
+    /**
+     * Parses a conditional expression and returns an AST for it.
+     *
+     * <pre>
+     *   conditionalExpression ::= conditionalAndExpression [ QUESTION expression COLON conditionalExpression ]
+     * </pre>
+     *
+     * @return an AST for a conditional expression.
+     */
     private JExpression conditionalExpression() {
         int line = scanner.token().line();
-        // TODO : something here idk
+        JExpression lhs = conditionalAndExpression();
+
+        // Check to see if there is a conditional statement in the line.
+        if (have(QUESTION)) {
+            JExpression expression = expression();
+            // If there is no colon, report a parser error.
+            mustBe(COLON);
+            JExpression conditionalExpression = conditionalExpression();
+            return new JConditionalExpression(line, lhs, expression, conditionalExpression);
+        } else {
+            // Return the left hand side returned from conditionalAndExpression if no question mark found.
+            return lhs;
+        }
     }
 
     /**
@@ -763,7 +784,7 @@ class Parser {
      * Parses a multiplicative expression and returns an AST for it.
      *
      * <pre>
-     *   multiplicativeExpression ::= unaryExpression { (DIV | STAR | REMAINDER) unaryExpression }
+     *   multiplicativeExpression ::= unaryExpression { ( DIV | STAR | REM ) unaryExpression }
      * </pre>
      *
      * @return an AST for a multiplicative expression.
@@ -777,7 +798,7 @@ class Parser {
                 lhs = new JMultiplyOp(line, lhs, unaryExpression());
             } else if (have(DIV)) {
                 lhs = new JDivideOp(line, lhs, unaryExpression());
-            } else if (have(REMAINDER)) {
+            } else if (have(REM)) {
                 lhs = new JRemainderOp(line, lhs, unaryExpression());
             } else {
                 more = false;
@@ -791,8 +812,7 @@ class Parser {
      *
      * <pre>
      *   unaryExpression ::= INC unaryExpression
-     *                     | MINUS unaryExpression
-     *                     | PLUS unaryExpression
+     *                     | ( MINUS | PLUS ) unaryExpression
      *                     | simpleUnaryExpression
      * </pre>
      *

@@ -157,10 +157,13 @@ class Scanner {
                 return new TokenInfo(STAR, line);
             case '%':
                 nextCh();
-                return new TokenInfo(REMAINDER, line);
+                return new TokenInfo(REM, line);
             case '?':
                 nextCh();
-                return new TokenInfo(CONDITIONAL, line);
+                return new TokenInfo(QUESTION, line);
+            case ':':
+                nextCh();
+                return new TokenInfo(COLON, line);
             case '=':
                 nextCh();
                 if (ch == '=') {

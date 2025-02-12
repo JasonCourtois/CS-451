@@ -1,5 +1,7 @@
 package jminusminus;
 
+import static jminusminus.CLConstants.GOTO;
+
 /**
  * The AST node for a conditional expression.
  */
@@ -32,7 +34,17 @@ class JConditionalExpression extends JExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        // Analyze each part of the conditional expression.
+        condition = condition.analyze(context);
+        thenPart = thenPart.analyze(context);
+        elsePart = elsePart.analyze(context);
+        
+        // Check that the condition is of type boolean, and that the else and then parts have the same type.
+        condition.type().mustMatchExpected(line(), Type.BOOLEAN);
+        elsePart.type().mustMatchExpected(line(), thenPart.type());
+
+        // Assign type and then return.
+        type = elsePart.type();
         return this;
     }
 
@@ -40,7 +52,18 @@ class JConditionalExpression extends JExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        // Generate labels for elsePart and end of statement.
+        String elseLabel = output.createLabel();
+        String endLabel = output.createLabel();
+        // If the condition is false, jump to elseLabel
+        condition.codegen(output, elseLabel, false);
+        // thenPart - Otherwise, generate code and jump to end.
+        thenPart.codegen(output);
+        output.addBranchInstruction(GOTO, endLabel);
+        // elsePart - add a label here, generate code, and then add end label at end.
+        output.addLabel(elseLabel);
+        elsePart.codegen(output);
+        output.addLabel(endLabel);
     }
 
     /**
