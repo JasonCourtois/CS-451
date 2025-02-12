@@ -27,7 +27,11 @@ class JDoStatement extends JStatement {
      * {@inheritDoc}
      */
     public JStatement analyze(Context context) {
-        // TODO
+        // Analyze body and condition of code.
+        body = (JStatement) body.analyze(context);
+        condition = condition.analyze(context);
+        // Confirm that the condition is a boolean.
+        condition.type().mustMatchExpected(line(), Type.BOOLEAN);
         return this;
     }
 
@@ -35,7 +39,13 @@ class JDoStatement extends JStatement {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        // Label placed at start of do loop.
+        String topLabel = output.createLabel();
+        output.addLabel(topLabel);
+        // Generate code for body.
+        body.codegen(output);
+        // Loop back to start if condition is true.
+        condition.codegen(output, topLabel, true);
     }
 
     /**

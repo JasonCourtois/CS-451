@@ -321,6 +321,7 @@ class Parser {
      *               | RETURN [ expression ] SEMI
      *               | SEMI
      *               | WHILE parExpression statement
+     *               | DO statement WHILE parExpression SEMI
      *               | statementExpression SEMI
      * </pre>
      *
@@ -349,6 +350,16 @@ class Parser {
             JExpression test = parExpression();
             JStatement statement = statement();
             return new JWhileStatement(line, test, statement);
+        } else if (have(DO)) {
+            // Get statement (aka - body) of the do-while loop.
+            JStatement statement = statement();
+            // Confirm keyword while is present.
+            mustBe(WHILE);
+            // Get test condition for loop.
+            JExpression test = parExpression();
+            // Line must end in semi colon.
+            mustBe(SEMI);
+            return new JDoStatement(line, statement, test);
         } else {
             // Must be a statementExpression.
             JStatement statement = statementExpression();

@@ -3,42 +3,78 @@ problem along with any issues you encountered and if/how you managed to solve th
 
 [Problem 1 (Understanding j--)]
 
-Goal: ...
+Goal: Create a basic j-- program to print out numbers in a specified, incrementing sequence.
 
-Approach: ...
+Approach: I approached this like I would a normal java program, except I needed to use a 
+while loop instead of a for loop as for loops are not supported in j--. I have 3 variables, 
+start, stop and step. While stop > start, I print out start and then increment it.
 
 [Problem 2 (Understanding the JVM)]
 
-Goal: ...
+Goal: Re-create Seq.java using CLEmitter by generating JVM bytecode.
 
-Approach: ...
+Approach: I started this problem by following the example discussed in class with the
+GenFactorial program. I looked at my Seq.java program line-by-line, and used the needed 
+CLEmitter methods to create the necessary bytecode. I used the textbook's appendix on the 
+CLEmitter to better understand the methods that were available as well as the GenFactorial
+program. One issue I had was my program was outputting everything. This was because I was
+putting stop and start on the stack in the incorrect order before checking if stop > start.
 
 [Problem 3 (Arithmetic Operators)]
 
-Goal: ...
+Goal: Add support for division, remainder, and unary plus operators into j--.
 
-Approach: ...
+Approach: The instructions for how to implement division were given in class, so I 
+followed the same steps for the remainder and unary plus operators. I first added the / and
+% characters into TokenInfo.java. I then inserted the TokenInfo return for division after 
+the if statement in Scanner.java that checks for comments. I also added a switch statement 
+for the % character. Nothing needed to be modified about the scanner for unary plus, as that
+token is also used for addition. I then added divide and remainder parsing within 
+multiplicativeExpression() and the unary plus parsing within unaryExpression. Lastly, I 
+implemented the needed changes to JDivideOp, JRemainderOp, and JUnaryPlusOp.
 
 [Problem 4 (Conditional Expression)]
 
-Goal: ...
+Goal: Add support for conditional expressions into j--.
 
-Approach: ...
+Approach: I found this problem to be the most challenging within the assignment. I had a lot
+of trouble figuring out what exactly I needed to modify at first. Once I understood what the
+grammar rules were describing, I modified assignmentExpression() within the parser to no 
+longer call conditionalAndExpression, and now call conditionalExpression. Within 
+conditionalExpression, I check if there is a question mark. If there isn't, I simply return
+the left hand side that was returned by my call to conditionalAndExpression. If there is a ?,
+I parse for an expression, followed by a colon, followed by a conditionalExpression. Then I 
+return the new JConditionalExpression. Within JConditionalExpression, I check that the 
+condition is a boolean and that both parts of the expression have the same type. Lastly, in
+codegen I create the needed labels to jump to the needed expression based on condition. I 
+did this by using the 3 argument codegen method call.
 
 [Problem 5 (Do Statement)]
 
-Goal: ...
+Goal: Add support for do-while loops into j--.
 
-Approach: ...
+Approach: Firstly, I needed to add the do token into TokenInfo.java. Then I added DO as a 
+reserved keyword at the start of Scanner.java. In Parser.java, I added an if condition 
+in statement() to check for the DO token. If present, parse a statement followed by a 
+WHILE keyword, followed by a parExpression, and lastly a semicolon. Then I return a 
+call to JDoStatement. Within JDoStatement, I analyze the body and condition of the loop and
+check if the condition is a boolean. Within codegen, I make a label that represents the top
+of the loop, run codegen on the body, and then jump back to the starting label if the 
+condition is true.
 
 2. Did you receive any help? List the sources along with a short description of the help received.
 
 Source                               Help Received
 ------                               -------------
 
-...                                  ...
+Swami Iyer                           Provided clarification on what the unary plus operator needed
+                                     to do within j--.
+
+Trinadhreddy Seelam                  Assisted me with using the correct function call when parsing
+                                     for necessary tokens. I needed to change if (have(token)) to 
+                                     mustBe(token)
 
 3. List any other comments here. Feel free to provide any feedback on how much you learned from
 doing the assignment, and whether you enjoyed doing it.
 
-...
+I found the discussion document very helpful at a few moments with problem 4 when I was stuck!

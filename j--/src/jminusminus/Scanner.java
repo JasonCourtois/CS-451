@@ -72,6 +72,7 @@ class Scanner {
         reserved.put(TRUE.image(), TRUE);
         reserved.put(VOID.image(), VOID);
         reserved.put(WHILE.image(), WHILE);
+        reserved.put(DO.image(), DO);
 
         // Prime the pump.
         nextCh();

@@ -126,6 +126,11 @@ enum TokenKind {
     WHILE("while"),
 
     /**
+     * Reserved word, "do".
+     */
+    DO("do"),
+
+    /**
      * Operator, "=".
      */
     ASSIGN("="),

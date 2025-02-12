@@ -194,8 +194,8 @@ class JDivideOp extends JBinaryExpression {
      */
     public JExpression analyze(Context context) {
         // Analyze left and right hand side.
-        lhs = (JExpression) lhs.analyze(context);
-        rhs = (JExpression) rhs.analyze(context);
+        lhs = lhs.analyze(context);
+        rhs = rhs.analyze(context);
         // Verify that both sides are integers.
         lhs.type().mustMatchExpected(line(), Type.INT);
         rhs.type().mustMatchExpected(line(), Type.INT);
@@ -235,8 +235,8 @@ class JRemainderOp extends JBinaryExpression {
      */
     public JExpression analyze(Context context) {
         // Analyze left and right hand side.
-        lhs = (JExpression) lhs.analyze(context);
-        rhs = (JExpression) rhs.analyze(context);
+        lhs = lhs.analyze(context);
+        rhs = rhs.analyze(context);
         // Verify that both sides are integers.
         lhs.type().mustMatchExpected(line(), Type.INT);
         rhs.type().mustMatchExpected(line(), Type.INT);

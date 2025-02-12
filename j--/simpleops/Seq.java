@@ -7,7 +7,7 @@ public class Seq {
         int step = Integer.parseInt(args[1]);
         int stop = Integer.parseInt(args[2]);
 
-        while (start <= stop) {
+        while (stop > start) {
             System.out.println(start);
             start += step;
         }
