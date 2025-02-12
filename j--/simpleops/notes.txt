@@ -7,7 +7,7 @@ Goal: Create a basic j-- program to print out numbers in a specified, incrementi
 
 Approach: I approached this like I would a normal java program, except I needed to use a 
 while loop instead of a for loop as for loops are not supported in j--. I have 3 variables, 
-start, stop and step. While stop > start, I print out start and then increment it.
+start, stop and step. While start <= stop, I print out start and then increment it.
 
 [Problem 2 (Understanding the JVM)]
 
@@ -18,7 +18,7 @@ GenFactorial program. I looked at my Seq.java program line-by-line, and used the
 CLEmitter methods to create the necessary bytecode. I used the textbook's appendix on the 
 CLEmitter to better understand the methods that were available as well as the GenFactorial
 program. One issue I had was my program was outputting everything. This was because I was
-putting stop and start on the stack in the incorrect order before checking if stop > start.
+putting stop and start on the stack in the incorrect order before checking if start > stop.
 
 [Problem 3 (Arithmetic Operators)]
 
