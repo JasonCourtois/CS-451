@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.Hashtable;
-
 import static jminusminus.TokenKind.*;
 
 /**
@@ -97,7 +96,29 @@ class Scanner {
                     while (ch != '\n' && ch != EOFCH) {
                         nextCh();
                     }
-                } else {
+                } if (ch == '*') {
+                    // Tracks when a comment has ended
+                    boolean inComment = true;
+                    // Loops until loop ends or we reach end of file
+                    while (inComment && ch != EOFCH) {
+                        // If we see a star followed by a slash, advance input and set inComment to false.
+                        if (ch == '*') {
+                            nextCh();
+                            if (ch == '/') {
+                                nextCh();
+                                inComment = false;
+                                break;
+                            }
+                        } else {
+                            // Otherwise just advance to next character.
+                            nextCh();
+                        }
+                    }
+                    // If this is true, that means we reached the end of file while still in a comment.
+                    if (inComment) {
+                        reportScannerError("Block comment was never ended properly");
+                    }
+                }  else {
                     return new TokenInfo(DIV, line);
                 }
             } else {
