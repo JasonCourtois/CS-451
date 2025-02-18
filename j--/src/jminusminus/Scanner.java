@@ -317,56 +317,80 @@ class Scanner {
             case '.':
                 buffer = new StringBuilder();
                 if (isDigit(ch)) {
+                    // If literal begins with a digit, Get all of the starting digits to our literal.
                     buffer.append(digits());
                     if (ch == 'l' || ch == 'L') {
+                        // If we have an l or L character, report a long literal.
                         buffer.append(ch);
                         nextCh();
                         return new TokenInfo(LONG_LITERAL, buffer.toString(), line);
                     } else if (ch != '.' && ch != 'e' && ch != 'E' && ch != 'd' && ch != 'D') {
+                        // If we have no double, decimal, or exponent, then we simply have an integer literal.
                         return new TokenInfo(INT_LITERAL, buffer.toString(), line);
                     } else if (ch == '.') {
+                        // Decimal was detected, meaning we have a double literal.
                         buffer.append(ch);
                         nextCh();
+        
+                        // Add any digits to string after '.'
                         if (isDigit(ch)) {
                             buffer.append(digits());
                         }
-                        if (ch == 'e' || ch == 'E') {
+                        // Add exponent if one is present.
+                        if (isE()) {
                             buffer.append(exponent());
                         }
-                        if (ch == 'd' || ch == 'D') {
+                        // Add double character (d or D) if present.
+                        if (isD()) {
                             buffer.append(ch);
                             nextCh();
                         }
+
+                        // Return double literal.
                         return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
                     } else {
-                        if (ch == 'e' || ch == 'E') {
+                        // In this case, after our digits there is either a e/E or d/D character.
+
+                        // If there is an exponent, add it, then add the d/D character if present.
+                        if (isE()) {
                             buffer.append(exponent());
-                            if (ch == 'd' || ch == 'D') {
+                            if (isD()) {
                                 buffer.append(ch);
                                 nextCh();
                             }
-                        } else if (ch == 'd' || ch == 'D'){
+                        } else if (isD()){
+                            // If there was no exponent, but there was a d/D, append it.
                             buffer.append(ch);
                             nextCh();
                         } else {
+                            // If we got here, something was seriously wrong with our literal.
                             reportScannerError("malformed double literal");
                         }
+
+                        // Return the double literal 
                         return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
                     }
                 } else {
+                    // In this case, our literal started with a '.' character.
                     nextCh();
                     if (isDigit(ch)) {
+                        // If there are digits after the '.', then we build the literal digits.
                         buffer.append('.');
                         buffer.append(digits());
-                        if (ch == 'e' || ch == 'E') {
+
+                        // After the digits, add any exponent or d/D character to literal.
+                        if (isE()) {
                             buffer.append(exponent());
                         }
-                        if (ch == 'd' || ch == 'D') {
+                        if (isD()) {
                             buffer.append(ch);
                             nextCh();
                         }
+                        
+                        // Returns the double literal that starts with the '.' character.
                         return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
                     } else {
+                        // If we are here, there are no digits after the '.', so we just return the dot token.
                         return new TokenInfo(DOT, line);
                     }
                 }
@@ -471,13 +495,14 @@ class Scanner {
     private String digits() {
         StringBuilder output = new StringBuilder();
         // Verify at least one digit is found.
-        if (!isDigit(ch)) {
-            reportScannerError("no digit found for digits string builder");
-            return "";
-        } else {
+        if (isDigit(ch)) {
             output.append(ch);
             nextCh();
+        } else {
+            reportScannerError("no digit found for digits string builder");
+            return "";
         }
+        
         // Keep scanning while there are additional digits.
         while (isDigit(ch)) {
             output.append(ch);
@@ -489,21 +514,35 @@ class Scanner {
     // Returns a string of an exponent starting at char ch. Returns an empty string if error was found.
     private String exponent() {
         StringBuilder output = new StringBuilder();
-        if (ch == 'e' || ch == 'E') {
+
+        // Verify that e or E is present at start of exponent.
+        if (isE()) {
             output.append(ch);
             nextCh();
-        } 
+        } else {
+            reportScannerError("prefix e or E not present for exponent");
+            return "";
+        }
+
+        // Check if a sign is present in exponent.
         if (ch == '-' || ch == '+') {
             output.append(ch);
             nextCh();
         }
-        String digits = digits();
-        if (digits.length() == 0) {
-            reportScannerError("no digits found in exponent");
-            return "";
-        }
-        output.append(digits);
+
+        // Append digits to exponent and return result.
+        output.append(digits());
         return output.toString();
+    }
+
+    // Returns true if the current character is either e or E.
+    private boolean isE() {
+        return ch == 'e' || ch == 'E';
+    }
+
+    // Returns true if the current character is either d or D.
+    private boolean isD() {
+        return ch == 'd' || ch == 'D';
     }
 
     // Returns true if the specified character is a whitespace, and false otherwise.
