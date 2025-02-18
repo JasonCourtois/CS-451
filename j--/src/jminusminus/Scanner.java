@@ -72,6 +72,14 @@ class Scanner {
         reserved.put(VOID.image(), VOID);
         reserved.put(WHILE.image(), WHILE);
         reserved.put(DO.image(), DO);
+        reserved.put(BREAK.image(), BREAK);
+        reserved.put(CASE.image(), CASE);
+        reserved.put(CONTINUE.image(), CONTINUE);
+        reserved.put(DEFAULT.image(), DEFAULT);
+        reserved.put(DOUBLE.image(), DOUBLE);
+        reserved.put(FOR.image(), FOR);
+        reserved.put(LONG.image(), LONG);
+        reserved.put(SWITCH.image(), SWITCH);
 
         // Prime the pump.
         nextCh();
@@ -96,9 +104,10 @@ class Scanner {
                     while (ch != '\n' && ch != EOFCH) {
                         nextCh();
                     }
-                } if (ch == '*') {
-                    // Tracks when a comment has ended
+                } else if (ch == '*') {
+                    // We are in a block comment, set new boolean to true and advance input.
                     boolean inComment = true;
+                    nextCh();
                     // Loops until loop ends or we reach end of file
                     while (inComment && ch != EOFCH) {
                         // If we see a star followed by a slash, advance input and set inComment to false.

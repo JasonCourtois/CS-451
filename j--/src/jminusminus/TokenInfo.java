@@ -131,6 +131,46 @@ enum TokenKind {
     DO("do"),
 
     /**
+     * Reserved word, "break".
+     */
+    BREAK("break"),
+
+    /**
+     * Reserved word, "case".
+     */
+    CASE("case"),
+
+    /**
+     * Reserved word, "continue".
+     */
+    CONTINUE("continue"),
+
+    /**
+     * Reserved word, "default".
+     */
+    DEFAULT("default"),
+
+    /**
+     * Reserved word, "double".
+     */
+    DOUBLE("double"),
+
+    /**
+     * Reserved word, "for".
+     */
+    FOR("for"),
+
+    /**
+     * Reserved word, "long".
+     */
+    LONG("long"),
+    
+    /**
+     * Reserved word, "switch".
+     */
+    SWITCH("switch"),
+
+    /**
      * Operator, "=".
      */
     ASSIGN("="),
