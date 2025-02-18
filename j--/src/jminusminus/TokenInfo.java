@@ -191,6 +191,11 @@ enum TokenKind {
     GT(">"),
 
     /**
+     * Operator, "<".
+     */
+    LT("<"),
+
+    /**
      * Operator, "++".
      */
     INC("++"),
@@ -201,9 +206,19 @@ enum TokenKind {
     LAND("&&"),
 
     /**
+     * Operator, "||".
+     */
+    LOR("||"),
+
+    /**
      * Operator, "&lt;=".
      */
     LE("<="),
+
+    /**
+     * Operator, "&gt;=".
+     */
+    GE(">="),
 
     /**
      * Operator, "!".
@@ -249,6 +264,31 @@ enum TokenKind {
      * Operator, ":".
      */
     COLON(":"),
+
+    /**
+     * Operator, "-=".
+     */
+    MINUS_ASSIGN("-="),
+
+    /**
+     * Operator, "*=".
+     */
+    STAR_ASSIGN("*="),
+
+    /**
+     * Operator, "/=".
+     */
+    DIV_ASSIGN("/="),
+
+    /**
+     * Operator, "%=".
+     */
+    REM_ASSIGN("%="),
+
+    /**
+     * Operator, "!=".
+     */
+    NOT_EQUAL("!="),
 
     /**
      * Separator, ",".
@@ -309,6 +349,16 @@ enum TokenKind {
      * Integer literal.
      */
     INT_LITERAL("<INT_LITERAL>"),
+
+    /**
+     * Long literal.
+     */
+    LONG_LITERAL("<LONG_LITERAL>"),
+
+    /**
+     * Double literal.
+     */
+    DOUBLE_LITERAL("<DOUBLE_LITERAL>"),
 
     /**
      * String literal.
