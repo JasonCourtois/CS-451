@@ -118,7 +118,7 @@ class Scanner {
                     if (inComment) {
                         reportScannerError("Block comment was never ended properly");
                     }
-                }  else {
+                } else {
                     return new TokenInfo(DIV, line);
                 }
             } else {
