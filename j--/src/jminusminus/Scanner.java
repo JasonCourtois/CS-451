@@ -317,7 +317,7 @@ class Scanner {
             case '.':
                 buffer = new StringBuilder();
                 if (isDigit(ch)) {
-                    // If literal begins with a digit, Get all of the starting digits to our literal.
+                    // If literal begins with a digit, add all of the starting digits to our literal.
                     buffer.append(digits());
                     if (ch == 'l' || ch == 'L') {
                         // If we have an l or L character, report a long literal.
