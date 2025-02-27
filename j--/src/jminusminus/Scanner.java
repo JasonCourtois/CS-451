@@ -107,6 +107,8 @@ class Scanner {
                 } else if (ch == '*') {
                     // We are in a block comment, set new boolean to true and advance input.
                     boolean inComment = true;
+                    // Store the starting line of block comment for error reporting.
+                    int StartLine = line;
                     nextCh();
                     // Loops until loop ends or we reach end of file
                     while (inComment && ch != EOFCH) {
@@ -125,7 +127,7 @@ class Scanner {
                     }
                     // If this is true, that means we reached the end of file while still in a comment.
                     if (inComment) {
-                        reportScannerError("Block comment was never ended properly");
+                        reportScannerError("Block comment was never ended properly that started on line: " + StartLine);
                     }
                 } else if (ch == '=') {
                     nextCh();

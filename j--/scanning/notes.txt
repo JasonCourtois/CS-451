@@ -3,15 +3,24 @@ problem along with any issues you encountered and if/how you managed to solve th
 
 [Problem 1 (Multiline Comment)]
 
-Goal: ... 
+Goal: Add support for multiline comments into j-- in the format /*<comment body>*/
 
-Approach: ... 
+Approach: Within Scanner.java, I modified the code concerning scanning of the / character.
+When a * is found directly after a /, then we have entered a multiline comment. I set a boolean
+called inComment to true to track if we are inside a multiline comment. I also set an integer to
+the current line number for error reporting. We then enter a while loop where we ignore all
+characters until we see a * followed by a / to exit comment. We then set inComment to false and break
+to exit the loop. This allows the scanner to pass over all characters within the multiline comment.
+Once outside the loop, we check to see if inComment is true. If it's true, then report an error as 
+we never exited the multiline comment before the EOF character. Here is where the start line number is reported.
 
 [Problem 2 (Reserved Words)]
 
-Goal: ... 
+Goal: Add support for various reserved words within our scanner for j--
 
-Approach: ... 
+Approach: Firstly, I created TokenKinds for these reserved words within TokenInfo. Then I added these
+tokens into our table of reserved words within Scanner.java. This allows the scanner to properly read
+these reserved words: break, case, continue, default, double, long, switch.
 
 [Problem 3 (Operators)]
 
