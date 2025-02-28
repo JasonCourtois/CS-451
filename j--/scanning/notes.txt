@@ -24,24 +24,66 @@ these reserved words: break, case, continue, default, double, long, switch.
 
 [Problem 3 (Operators)]
 
-Goal: ... 
+Goal: Add support for various operators within our scanner for j--
 
-Approach: ... 
+Approach: Firstly, I created TokenKinds for these operators within TokenInfo. I then needed to add scanning
+support in a couple different places within Scanner.java to get support working. For example, to get the
+-= operator working, I changed code within the logic for when the - character is scanned. Once a - is scanned,
+I check to see if the next character is a =, if it is, I return a -= token info object. Otherwise, I just return
+token info for the - operator. I followed a similar approach for the following operators: *= /= %= != >=. For the
+< operator, I simply added a new case to return the token info when it is scanned. Lastly, for the || operator,
+when one | character is scanned, I check if the next character is also a |. If it is, I return the correct token info.
+If it isn't present, I return an error saying bitwise or is currently not supported in j--.
 
 [Problem 4 (Literals)]
 
-Goal: ... 
+Goal: Add support for scanning double and long literals in our scanner for j--
 
-Approach: ... 
+Approach: This was definitely the most difficulty problem in the assignment. Most of the code modified for this problem
+was within the final cases in the large switch statement in Scanner.java. In the cases that handle scanning integer digits
+I inserted the logic for scanning double and long literals. I also made 4 helper functions. Digits, which scans digits and 
+returns them as a string. Exponent, which returns an exponent as a string. And two short functions, isE and isD which returns
+true if the next character is e or E and if the character is d or D respectively. I made isE and isD because frequently within
+this problem I had to check if the current character was e or E, and d or D.
+
+The logic for this section can be broken down in the following way:
+- Firstly make a string builder object
+if literal starts with digit:
+    - add all digits to string builder
+    if literal ends in a l or L (for Long)
+        - return info for long literals
+    else if the literal does not end with . e E d or D,
+        - return info for an integer literal
+    else if the literal ends in a . then it is a double 
+        - add any digits, exponent, or double character present after . character
+        - return info for double literal 
+    else 
+        - if we are here, then our literal is a string of digits followed by an exponent or double character (d or D)
+        if we have exponent
+            - add exponent to string buffer, followed by double character if present.
+        else if we have double character
+            - add it to string buffer
+        else
+            - if we are here, there is something seriously wrong with this literal.
+            - The literal somehow did not get detected as an integer literal, but is expected to be a double literal
+            - report error
+        - return token info for double literal
+else 
+    - if we are here, our literal started with a . character 
+    if the next character is a digit
+        - add digits for string buffer
+        - add any exponent or double character if present
+        - Return token info for double literal
+    else
+        - If no digit was present, simply return token info for a DOT character.
 
 2. Did you receive any help? List the sources along with a short description of the help received.
 
 Source                               Help Received
 ------                               -------------
 
-...                                  ...
 
 3. List any other comments here. Feel free to provide any feedback on how much you learned from
 doing the assignment, and whether you enjoyed doing it.
 
-...
+The 4th problem was definitely the most difficult problem, but it was a good challenge!
