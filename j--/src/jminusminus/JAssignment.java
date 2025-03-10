@@ -144,18 +144,7 @@ class JMinusAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // Verify that the left hand side is valid for this assignment 
-        if (!(lhs instanceof JLhs)) {
-            JAST.compilationUnit.reportSemanticError(line(), "illegal lhs for assignment");
-            return this;
-        } else {
-            lhs = ((JLhs) lhs).analyzeLhs(context);
-        }
-        rhs = rhs.analyze(context);
-        // Verify that both sides of assignment are integers.
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
+        // TODO
         return this;
     }
 
@@ -163,14 +152,7 @@ class JMinusAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        ((JLhs) lhs).codegenLoadLhsLvalue(output);
-        ((JLhs) lhs).codegenLoadLhsRvalue(output);
-        rhs.codegen(output);
-        output.addNoArgInstruction(IADD);
-        if (!isStatementExpression) {
-            ((JLhs) lhs).codegenDuplicateRvalue(output);
-        }
-        ((JLhs) lhs).codegenStore(output);
+        // TODO
     }
 }
 

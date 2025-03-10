@@ -321,6 +321,7 @@ class Parser {
      *               | RETURN [ expression ] SEMI
      *               | SEMI
      *               | WHILE parExpression statement
+     *               | FOR LPAREN [ forInit ] SEMI [ expression ] SEMI [ forUpdate ] RPAREN statement
      *               | DO statement WHILE parExpression SEMI
      *               | statementExpression SEMI
      * </pre>
@@ -350,6 +351,25 @@ class Parser {
             JExpression test = parExpression();
             JStatement statement = statement();
             return new JWhileStatement(line, test, statement);
+        } else if (have(FOR)) {
+            ArrayList<JStatement> init = new ArrayList<>();
+            ArrayList<JStatement> update = new ArrayList<>();
+            JExpression condition = null;
+            mustBe(LPAREN);
+            if (!see(SEMI)) {
+                init = forInit();
+            }
+            mustBe(SEMI);
+            if (!see(SEMI)) {
+                condition = expression();
+            }
+            mustBe(SEMI);
+            if (!see(RPAREN)) {
+                update = forUpdate();
+            }
+            mustBe(RPAREN);
+            JStatement body = statement();
+            return new JForStatement(line, init, condition, update, body);
         } else if (have(DO)) {
             // Get statement (aka - body) of the do-while loop.
             JStatement statement = statement();
@@ -388,6 +408,61 @@ class Parser {
         } while (have(COMMA));
         mustBe(RPAREN);
         return parameters;
+    }
+
+    /**
+     * Parses and returns a list of statements in the forInit part of a for loop.
+     * 
+     * <pre>
+     *   forInit ::= statementExpression { COMMA statementExpression }
+     *             | type variableDeclarators
+     * </pre>
+     * 
+     * @return
+     */
+    private ArrayList<JStatement> forInit() {
+        // Initialize array for statement exptessions.
+        ArrayList<JStatement> statements = new ArrayList<>();
+
+        // If we dont see a variable declarator, parse the first case of forInit.
+        if (!seeLocalVariableDeclaration()) {
+            JStatement statement = statementExpression();
+            statements.add(statement);
+
+            // Parse additional expressions.
+            while (have(COMMA)) {
+                statement = statementExpression();
+                statements.add(statement);
+            }
+        } else {
+            // Parse a single variable declaration statement.
+            JVariableDeclaration statment = localVariableDeclarationStatement();
+            statements.add(statment);
+        }
+        return statements;
+    }
+
+    /**
+     * Parses and returns a list of statements in the forUpdate part of a for loop.
+     * 
+     * <pre>
+     *   forUpdate ::= statementExpression { COMMA statementExpression }
+     * </pre>
+     * 
+     * @return
+     */
+    private ArrayList<JStatement> forUpdate() {
+        // Initialize array for statement exptessions.
+        ArrayList<JStatement> statements = new ArrayList<>();
+        JStatement statement = statementExpression();
+        statements.add(statement);
+
+        // Parse additional statements and add them to the array list.
+        while (have(COMMA)) {
+            statement = statementExpression();
+            statements.add(statement);
+        }
+        return statements;
     }
 
     /**
@@ -560,7 +635,7 @@ class Parser {
      * Parses and returns a basic type.
      *
      * <pre>
-     *   basicType ::= BOOLEAN | CHAR | INT
+     *   basicType ::= BOOLEAN | CHAR | INT | LONG | DOUBLE
      * </pre>
      *
      * @return a basic type.
@@ -572,6 +647,10 @@ class Parser {
             return Type.CHAR;
         } else if (have(INT)) {
             return Type.INT;
+        } else if (have(DOUBLE)) {
+            return Type.DOUBLE;
+        } else if (have(LONG)) {
+            return Type.LONG;
         } else {
             reportParserError("type sought where %s found", scanner.token().image());
             return Type.ANY;
@@ -682,14 +761,14 @@ class Parser {
      * Parses a conditional expression and returns an AST for it.
      *
      * <pre>
-     *   conditionalExpression ::= conditionalAndExpression [ QUESTION expression COLON conditionalExpression ]
+     *   conditionalExpression ::= conditionalOrExpression [ QUESTION expression COLON conditionalExpression ]
      * </pre>
      *
      * @return an AST for a conditional expression.
      */
     private JExpression conditionalExpression() {
         int line = scanner.token().line();
-        JExpression lhs = conditionalAndExpression();
+        JExpression lhs = conditionalOrExpression();
 
         // Check to see if there is a conditional statement in the line.
         if (have(QUESTION)) {
@@ -728,10 +807,33 @@ class Parser {
     }
 
     /**
+     * Parses a conditional-or expression and returns an AST for it.
+     * 
+     * <pre>
+     *   conditionalOrExpression ::= conditionalAndExpression { LOR conditionalAndExpression }
+     * </pre>
+     *
+     * @return an AST for a conditional-or expression.
+     */
+    private JExpression conditionalOrExpression() {
+        int line = scanner.token().line();
+        boolean more = true;
+        JExpression lhs = conditionalAndExpression();
+        while (more) {
+            if (have(LOR)) {
+                lhs = new JLogicalOrOp(line, lhs, conditionalAndExpression());
+            } else {
+                more = false;
+            }
+        }
+        return lhs;
+    }
+
+    /**
      * Parses an equality expression and returns an AST for it.
      *
      * <pre>
-     *   equalityExpression ::= relationalExpression { EQUAL relationalExpression }
+     *   equalityExpression ::= relationalExpression { ( EQUAL | NOT_EQUAL ) relationalExpression }
      * </pre>
      *
      * @return an AST for an equality expression.
@@ -743,6 +845,8 @@ class Parser {
         while (more) {
             if (have(EQUAL)) {
                 lhs = new JEqualOp(line, lhs, relationalExpression());
+            } else if (have(NOT_EQUAL)) {
+                lhs = new JNotEqualOp(line, lhs, relationalExpression());
             } else {
                 more = false;
             }
@@ -754,7 +858,7 @@ class Parser {
      * Parses a relational expression and returns an AST for it.
      *
      * <pre>
-     *   relationalExpression ::= additiveExpression [ ( GT | LE ) additiveExpression
+     *   relationalExpression ::= additiveExpression [ ( GT | LE | GE | LT ) additiveExpression
      *                                               | INSTANCEOF referenceType ]
      * </pre>
      *
@@ -767,6 +871,10 @@ class Parser {
             return new JGreaterThanOp(line, lhs, additiveExpression());
         } else if (have(LE)) {
             return new JLessEqualOp(line, lhs, additiveExpression());
+        } else if (have(GE)) {
+            return new JGreaterEqualOp(line, lhs, additiveExpression());
+        } else if (have(LT)) {
+            return new JLessThanOp(line, lhs, additiveExpression());
         } else if (have(INSTANCEOF)) {
             return new JInstanceOfOp(line, lhs, referenceType());
         } else {
@@ -830,7 +938,7 @@ class Parser {
      * Parses an unary expression and returns an AST for it.
      *
      * <pre>
-     *   unaryExpression ::= INC unaryExpression
+     *   unaryExpression ::= ( DEC | INC ) unaryExpression
      *                     | ( MINUS | PLUS ) unaryExpression
      *                     | simpleUnaryExpression
      * </pre>
@@ -839,7 +947,9 @@ class Parser {
      */
     private JExpression unaryExpression() {
         int line = scanner.token().line();
-        if (have(INC)) {
+        if (have(DEC)) {
+            return new JPreDecrementOp(line, unaryExpression());
+        } else if (have(INC)) {
             return new JPreIncrementOp(line, unaryExpression());
         } else if (have(MINUS)) {
             return new JNegateOp(line, unaryExpression());
@@ -882,7 +992,7 @@ class Parser {
      * Parses a postfix expression and returns an AST for it.
      *
      * <pre>
-     *   postfixExpression ::= primary { selector } { DEC }
+     *   postfixExpression ::= primary { selector } { DEC | INC }
      * </pre>
      *
      * @return an AST for a postfix expression.
@@ -893,8 +1003,14 @@ class Parser {
         while (see(DOT) || see(LBRACK)) {
             primaryExpr = selector(primaryExpr);
         }
-        while (have(DEC)) {
-            primaryExpr = new JPostDecrementOp(line, primaryExpr);
+
+        // Parses decrement and increment tokens.
+        while (see(DEC) | see(INC)) {
+            if (have(DEC)) {
+                primaryExpr = new JPostDecrementOp(line, primaryExpr);
+            } else if (have(INC)) {
+                primaryExpr = new JPostIncrementOp(line, primaryExpr);
+            }
         }
         return primaryExpr;
     }
@@ -1065,7 +1181,7 @@ class Parser {
      * Parses a literal and returns an AST for it.
      *
      * <pre>
-     *   literal ::= CHAR_LITERAL | FALSE | INT_LITERAL | NULL | STRING_LITERAL | TRUE
+     *   literal ::= CHAR_LITERAL | FALSE | INT_LITERAL | LONG_LITERAL | DOUBLE_LITERAl | NULL | STRING_LITERAL | TRUE
      * </pre>
      *
      * @return an AST for a literal.
@@ -1078,6 +1194,10 @@ class Parser {
             return new JLiteralBoolean(line, scanner.previousToken().image());
         } else if (have(INT_LITERAL)) {
             return new JLiteralInt(line, scanner.previousToken().image());
+        } else if (have(DOUBLE_LITERAL)) {
+            return new JLiteralDouble(line, scanner.previousToken().image());
+        } else if (have(LONG_LITERAL)) {
+            return new JLiteralLong(line, scanner.previousToken().image());
         } else if (have(NULL)) {
             return new JLiteralNull(line);
         } else if (have(STRING_LITERAL)) {
@@ -1239,7 +1359,7 @@ class Parser {
 
     // Returns true if we are looking at a basic type, and false otherwise.
     private boolean seeBasicType() {
-        return (see(BOOLEAN) || see(CHAR) || see(INT));
+        return (see(BOOLEAN) || see(CHAR) || see(INT) || see(LONG) || see(DOUBLE));
     }
 
     // Returns true if we are looking at a reference type, and false otherwise.
@@ -1248,7 +1368,7 @@ class Parser {
             return true;
         } else {
             scanner.recordPosition();
-            if (have(BOOLEAN) || have(CHAR) || have(INT)) {
+            if (have(BOOLEAN) || have(CHAR) || have(INT) || have(DOUBLE) || have(LONG)) {
                 if (have(LBRACK) && see(RBRACK)) {
                     scanner.returnToPosition();
                     return true;
