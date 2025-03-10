@@ -352,18 +352,23 @@ class Parser {
             JStatement statement = statement();
             return new JWhileStatement(line, test, statement);
         } else if (have(FOR)) {
+            // Initialization for needed lists of statements in init and update
             ArrayList<JStatement> init = new ArrayList<>();
             ArrayList<JStatement> update = new ArrayList<>();
+            // Set condition to null
             JExpression condition = null;
             mustBe(LPAREN);
+            // If we don't see a SEMI, then there is a forInit statement to parse.
             if (!see(SEMI)) {
                 init = forInit();
             }
             mustBe(SEMI);
+            // Similarly, here we have a condition expression to parse.
             if (!see(SEMI)) {
                 condition = expression();
             }
             mustBe(SEMI);
+            // Once again, if there is no RPAREN, then there is a forUpdate statement to parse.
             if (!see(RPAREN)) {
                 update = forUpdate();
             }
@@ -426,18 +431,18 @@ class Parser {
 
         // If we dont see a variable declarator, parse the first case of forInit.
         if (!seeLocalVariableDeclaration()) {
-            JStatement statement = statementExpression();
-            statements.add(statement);
+            statements.add(statementExpression());
 
             // Parse additional expressions.
             while (have(COMMA)) {
-                statement = statementExpression();
-                statements.add(statement);
+                statements.add(statementExpression());
             }
         } else {
             // Parse a single variable declaration statement.
-            JVariableDeclaration statment = localVariableDeclarationStatement();
-            statements.add(statment);
+            int line = scanner.token().line();
+            Type type = type();
+            ArrayList<JVariableDeclarator> vdecls = variableDeclarators(type);
+            statements.add(new JVariableDeclaration(line, vdecls));
         }
         return statements;
     }
@@ -454,13 +459,11 @@ class Parser {
     private ArrayList<JStatement> forUpdate() {
         // Initialize array for statement exptessions.
         ArrayList<JStatement> statements = new ArrayList<>();
-        JStatement statement = statementExpression();
-        statements.add(statement);
+        statements.add(statementExpression());
 
         // Parse additional statements and add them to the array list.
         while (have(COMMA)) {
-            statement = statementExpression();
-            statements.add(statement);
+            statements.add(statementExpression());
         }
         return statements;
     }
