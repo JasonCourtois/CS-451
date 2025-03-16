@@ -3,48 +3,120 @@ problem along with any issues you encountered and if/how you managed to solve th
 
 [Problem 1 (Operators)]
 
-Goal: ... 
+Goal: Add support for several operators that we added to our scanner in assignment 2 to our parser
 
-Approach: ... 
+Approach: In order to add the following operators, I needed to modify Parser.java in several different places.
+Below I have organized the operators added based on what functions in Parser.java needed to be modified.
+    - Operators: -=, *=, /=, and %=
+        - Modified Function: assignmentExpression()
+        - In this function, I simply added additional if statements to see which of the
+          above operators were parsed. For each operator I just returned the corresponding 
+          AST representation function.
+    - Operator: !=
+        - Modified Function: equalityExpression()
+        - Here, I simply added another if statement to see if the not equals character was present
+          if it was, I called the corresponding AST representation function.
+    - Operators: >= and <
+        - Modified Function: relationalExpression()
+          Similar to the previous operators, I added additional if else statements, and called
+          the corresponding AST representation function.
+    - Operator: ||
+        - Added Function: conditionalOrExpression(); Modified Function: conditionalExpression()
+          I added a new function to parse conditional or expressions. This function first parses a conditional
+          and expression for the left hand side, then parses any additional LOR operators until no more are found.
+          I also modified the conditionalExpression function to first parse conditionalOrExpression instead of 
+          conditionalAndExpression. I followed the BNF of the java lite language specification to see how these should be modified.
+    - Operator: pre --
+        - Modified Function: unaryExpression()
+          Similar to the first couple operators, I added an additional if else statement to parse -- and called
+          the AST function for it.
+    - Operator: post ++
+        - Modified Function: postfixExpression
+          I adjusted the logic of the while loop to not just parse DEC tokens, but to first see if
+          DEC or INC tokens were present, then parse them accordingly with an if statement inside the while loop.
+          
 
 [Problem 2 (Long and Double Basic Types)]
 
-Goal: ... 
+Goal: Add support in our parser for long and double literals.
 
-Approach: ... 
+Approach: Adding support for these literals involved modifying a few different functions. Below are the changes to each
+function. I consulted the java lite language specification to see exactly how these functions should be changed.
+    - basicType()
+        - Here I simply added two if else statements to return Type.LONG or Type.DOUBLE depending on if the LONG or DOUBLE token was parsed.
+    - literal()
+        - I added two if else statements, one for LONG_LITERAL and DOUBLE_LITERAL. Depending on which one was parsed, I called JLiteralLong 
+          or JLiteralDouble.
+    - seeBasicType()
+        - I just added two extra or conditions for DOUBLE and LONG tokens.
+    - seeReferenceType()
+        - Similar to seeBasicType, I just added two extra or conditions for DOUBLE and LONG tokens.
 
 [Problem 3 (For Statement)]
 
-Goal: ... 
+Goal: Add support for parsing for statements with our parser
 
-Approach: ... 
+Approach: Adding support for FOR statements required modifying and adding some new functions to the parser. 
+Below I have changes laid out organized by function.
+    - Added Functions:
+        - forInit()
+            - First we make an array to add all statements that will be returned.
+              If we don't see a local variable declaration, then we parse a statement expressions
+              followed by commas and succeeding statement expressions. Otherwise, we construct a JVariableDeclaration
+              object, and add that object to our statement array. Once if statement is completed, we return the statements array.
+        - forUpdate()
+            - First, initialize the statements array. Then we parse at least one statement expression. Then while we can keep
+              parsing commas, parse additional statement expressions and add them to our array list. Finally, return the statements array.
+    - Modified Functions:
+        - statement()
+            - Declare the init and update array lists and assign them null values as these are optional for the FOR statement.
+              Similarly, declare the condition expression to null as this is also optional. Then we parse a LPAREN character.
+              Then parse an optional init using forInit, followed by a semi, followed by optional condition expression. Parse another
+              semi, then an optional update using forUpdate, lastly followed by an RPAREN and then the body using statement().
 
 [Problem 4 (Break Statement)]
 
-Goal: ... 
+Goal: Add support for break statements to our parser.
 
-Approach: ... 
+Approach: This problem simply involved adding a short if else block to statement(). If we have the BREAK token, parse a SEMI,
+then return the corresponding AST representation function.
 
 [Problem 5 (Continue Statement)]
 
-Goal: ... 
+Goal: Add support for continue statements to our parser.
 
-Approach: ... 
+Approach: This problem simply involved adding a short if else block to statement(). If we have the CONTINUE token, parse a SEMI,
+then return the corresponding AST representation function.
 
 [Problem 6 (Switch Statement)]
 
-Goal: ... 
+Goal: Add support for switch statements to our parser.
 
-Approach: ... 
+Approach: Similar to FOR statements, SWITCH statements involved modifying and adding a couple functions detailed below.
+
+- Added Functions:
+    - switchLabel()
+        - If we parse a CASE token, parse an expression followed by a colon, then return the parsed expression.
+          Otherwise, it means we have a DEFAULT token. Parse DEFAULT followed by a colon and return null.
+    - switchBlockStatementGroup
+        - Initialize array lists for blocks and labels. Parse one label using switchLabel and add it to array. While we see 
+          CASE or DEFAULT tokens, parse additional labels using switchLabel and add it to array. Once labels have been parsed,
+          we must parse block statements. While we don't see an RCURlY, CASE, or DEFAULT character that means
+          there is a block statement to parse. Parse these statements and add them to the array list. Once everything was parsed,
+          we call SwitchStatementGroup. If no blocks were parsed, pass in null for blocks. Otherwise we pass in the blocks array.
+- Modified Functions:
+    - statement()
+        - Initialize array for switchStatementGroups. First parse a parExpression, followed by an LCURLY. While we don't
+          see the RCURLY or EOF characters, parse the group and add it to array list using switchBlockStatementGroup.
+          Then parse an RCURLY character. If no groups were parsed, call JSwitchStatement with null as input for groups,
+          otherwise call the function with both the parsed parExpression and switchStatementGroups.
 
 2. Did you receive any help? List the sources along with a short description of the help received.
 
 Source                               Help Received
 ------                               -------------
 
-...                                  ...
 
 3. List any other comments here. Feel free to provide any feedback on how much you learned from
 doing the assignment, and whether you enjoyed doing it.
 
-...

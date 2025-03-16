@@ -454,10 +454,10 @@ class Parser {
      * @return
      */
     private ArrayList<JStatement> forInit() {
-        // Initialize array for statement exptessions.
+        // Initialize array for statement expressions.
         ArrayList<JStatement> statements = new ArrayList<>();
 
-        // If we dont see a variable declarator, parse the first case of forInit.
+        // If we don't see a variable declarator, parse the first case of forInit.
         if (!seeLocalVariableDeclaration()) {
             statements.add(statementExpression());
 
@@ -485,7 +485,7 @@ class Parser {
      * @return
      */
     private ArrayList<JStatement> forUpdate() {
-        // Initialize array for statement exptessions.
+        // Initialize array for statement expressions.
         ArrayList<JStatement> statements = new ArrayList<>();
         statements.add(statementExpression());
 
