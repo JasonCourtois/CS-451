@@ -323,6 +323,9 @@ class Parser {
      *               | WHILE parExpression statement
      *               | FOR LPAREN [ forInit ] SEMI [ expression ] SEMI [ forUpdate ] RPAREN statement
      *               | DO statement WHILE parExpression SEMI
+     *               | BREAK SEMI
+     *               | CONTINUE SEMI
+     *               | SWITCH parExpression LCURLY { switchBlockStatementGroup } RCURLY
      *               | statementExpression SEMI
      * </pre>
      *
@@ -353,8 +356,8 @@ class Parser {
             return new JWhileStatement(line, test, statement);
         } else if (have(FOR)) {
             // Initialization for needed lists of statements in init and update
-            ArrayList<JStatement> init = new ArrayList<>();
-            ArrayList<JStatement> update = new ArrayList<>();
+            ArrayList<JStatement> init = null;
+            ArrayList<JStatement> update = null;
             // Set condition to null
             JExpression condition = null;
             mustBe(LPAREN);
@@ -385,6 +388,31 @@ class Parser {
             // Line must end in semi colon.
             mustBe(SEMI);
             return new JDoStatement(line, statement, test);
+        } else if (have(BREAK)) {
+            mustBe(SEMI);
+            return new JBreakStatement(line);
+        } else if (have(CONTINUE)) {
+            mustBe(SEMI);
+            return new JContinueStatement(line);
+        } else if (have(SWITCH)) {
+            // Initialize array of switch statement groups.
+            ArrayList<SwitchStatementGroup> switchStatementGroups = new ArrayList<>();
+            // Parse a parExpression followed by a LCURLY character.
+            JExpression parExpression = parExpression();
+            mustBe(LCURLY);
+            // Add switchBlockStatementGroups until we see RCURLY or EOF characters.
+            while (!see(RCURLY) && !see(EOF)) {
+                switchStatementGroups.add(switchBlockStatementGroup());
+            }
+            // Parse RCURLY
+            mustBe(RCURLY);
+
+            // If there were no switch statement groups, call function with null for groups.
+            if (switchStatementGroups.size() == 0) {
+                return new JSwitchStatement(line, parExpression, null);
+            } else {
+                return new JSwitchStatement(line, parExpression, switchStatementGroups);
+            }
         } else {
             // Must be a statementExpression.
             JStatement statement = statementExpression();
@@ -483,6 +511,65 @@ class Parser {
         mustBe(IDENTIFIER);
         String name = scanner.previousToken().image();
         return new JFormalParameter(line, name, type);
+    }
+
+    /**
+     * Parses switch block statement group and returns an AST for it.
+     *
+     * <pre>
+     *   switchBlockStatementGroup ::= switchLabel { switchLabel } { blockStatement }
+     * </pre>
+     *
+     * @return an AST for a formal parameter.
+     */
+    private SwitchStatementGroup switchBlockStatementGroup() {
+        // Initialize the labels and block array lists.
+        ArrayList<JExpression> labels = new ArrayList<>();
+        ArrayList<JStatement> blocks = new ArrayList<>();
+
+        // Add the first label to labels array list.
+        labels.add(switchLabel());
+
+        // While we see the start of another switch label, which can only start with CASE or DEFAULT, scan another label.
+        while (see(CASE) || see(DEFAULT)) {
+            labels.add(switchLabel());
+        }
+
+        // Keep scanning block statements until we see the end of the switch statement (RCURLY) or a label (CASE or DEFAULT).
+        while (!see(RCURLY) && !see(CASE) && !see(DEFAULT)) {
+            blocks.add(blockStatement());
+        }
+        
+        // If there are no blocks, call switch statement group with null for blocks. Otherwise, call it with blocks list.
+        if (blocks.size() == 0) {
+            return new SwitchStatementGroup(labels, null);
+        } else {
+            return new SwitchStatementGroup(labels, blocks);
+        }
+    }
+
+    /**
+     * Parses switch label and returns an AST for it.
+     *
+     * <pre>
+     *   switchLabel ::= CASE expression COLON
+     *                 | DEFAULT COLON
+     * </pre>
+     *
+     * @return an AST for a formal parameter.
+     */
+    private JExpression switchLabel() {
+        if (have(CASE)) {
+            // If we have CASE literal, parse an expression and a COLON.
+            JExpression expression = expression();
+            mustBe(COLON);
+            return expression;
+        } else {
+            // Otherwise we must be in the second case, parse a DEFAULT and COLON literal.
+            mustBe(DEFAULT);
+            mustBe(COLON);
+            return null;
+        }
     }
 
     /**
