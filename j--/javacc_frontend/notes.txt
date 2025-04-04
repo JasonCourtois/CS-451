@@ -3,27 +3,45 @@ problem along with any issues you encountered and if/how you managed to solve th
 
 [Problem 1 (Multiline Comment)]
 
-Goal: ...
+Goal: Add multiline comment scanning into our JavaCC scanner
 
-Approach: ...
+Approach: To add support for multiline comments to our JavaCC Scanner, I used the existing
+code for single line comments as an example to build off of in j--.jj. The approach to scan multiline 
+comments is extremely similar to single line comments. When the characters /* are scanned, we 
+transition into IN_MULTI_LINE_COMMENT. While in MULTI_LINE_COMMENT, if */ is scanned, then we
+exit the multi line comment state and transition back into the default state. Otherwise, we 
+skip and ignore all characters by using the inverse of an empty character array, ~[].
 
 [Problem 2 (Reserved Words)]
 
-Goal: ...
+Goal: Add scanning support for several reserved words into our JavaCC scanner
 
-Approach: ...
+Approach: To add support for the following reserved words: break, case, continue, default, do, 
+double, for, long, and switch, I simply added them to the TOKEN reserved word section in j--.jj. The only
+interesting thing to note here was the token name for default became DEFLT, as DEFAULT is 
+already used by the default state of the scanner.
 
 [Problem 3 (Operators: Scanner)]
 
-Goal: ...
+Goal: Add support for several operators into our JavaCC scanner
 
-Approach: ...
+Approach: To add support for the following operators: / % ? : -= *= /= %= != >= < ||
+I simply added them into the TOKEN operator section in j--.jj. I followed the naming 
+convention for these operator tokens found in the java lite lexical grammar language specification.
 
 [Problem 4 (Literals)]
 
-Goal: ...
+Goal: Add support for double and long literals into our JavaCC scanner
 
-Approach: ...
+Approach: To add support for double and long literals, I needed to add extra TOKENS under
+the Literals section in j--.jj. I followed the lexical grammar rules found in the java lite language
+specification in order to properly handle the BNF notation for scanning these literals. Long literals
+were just scanned by first scanning an INT_LITERAL, followed by either an l or L character. I then
+added support for EXPONENT and SUFFIX as defined by the java lite language spec. Once I had these two
+implemented, I followed the specification for the four cases that needed to be added for double literals.
+The only interesting thing to note here is the potential mix-up of syntax between the language 
+specification and j--. If you want to say "zero or one" of something in j-- you use (a)? 
+However in BNF, your present it as [a]. This mixup caused some confusion when first implementing these rules.
 
 [Problem 5 (Operators: Parser)]
 

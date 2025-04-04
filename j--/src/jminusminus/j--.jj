@@ -111,21 +111,29 @@ SKIP: { <BEGIN_MULTI_LINE_COMMENT: "/*">: IN_MULTI_LINE_COMMENT }
 <IN_MULTI_LINE_COMMENT>
 SKIP: { <END_MULTI_LINE_COMMENT: "*/">: DEFAULT }
 <IN_MULTI_LINE_COMMENT>
-SKIP: { <MULTI_LINE_COMMENT: ~[]> }
+SKIP: { <COMMENT: ~[]> }
 
 // Reserved words
 TOKEN: {
   <ABSTRACT: "abstract">
 | <BOOLEAN: "boolean">
+| <BREAK: "break">
+| <CASE: "case">
 | <CHAR: "char">
 | <CLASS: "class">
+| <CONTINUE: "continue">
+| <DEFLT: "default">
+| <DO: "do">
+| <DOUBLE: "double">
 | <ELSE: "else">
 | <EXTENDS: "extends">
 | <FALSE: "false">
+| <FOR: "for">
 | <IF: "if">
 | <IMPORT: "import">
 | <INSTANCEOF: "instanceof">
 | <INT: "int">
+| <LONG: "long">
 | <NEW: "new">
 | <NULL: "null">
 | <PACKAGE: "package">
@@ -135,19 +143,11 @@ TOKEN: {
 | <RETURN: "return">
 | <STATIC: "static">
 | <SUPER: "super">
+| <SWITCH: "switch">
 | <THIS: "this">
 | <TRUE: "true">
 | <VOID: "void">
 | <WHILE: "while">
-| <BREAK: "break">
-| <CASE: "case">
-| <CONTINUE: "continue">
-| <DEFAULT_LITERAL: "default">
-| <DO: "do">
-| <DOUBLE: "double">
-| <FOR: "for">
-| <LONG: "long">
-| <SWITCH: "switch">
 }
 
 // Separators
@@ -166,17 +166,29 @@ TOKEN: {
 // Operators
 TOKEN: {
   <ASSIGN: "=">
+| <COLON: ":">
 | <DEC: "--">
+| <DIV: "/">
+| <DIV_ASSIGN: "/=">
 | <EQUAL: "==">
+| <GE: ">=">
 | <GT: ">">
 | <INC: "++">
 | <LAND: "&&">
 | <LE: "<=">
 | <LNOT: "!">
+| <LOR: "||">
+| <LT: "<">
 | <MINUS: "-">
+| <MINUS_ASSIGN: "-=">
+| <NOT_EQUAL: "!=">
 | <PLUS: "+">
 | <PLUS_ASSIGN: "+=">
+| <QUESTION: "?">
+| <REM: "%">
+| <REM_ASSIGN: "%=">
 | <STAR: "*">
+| <STAR_ASSIGN: "*=">
 }
 
 // Identifiers
@@ -189,6 +201,14 @@ TOKEN: {
 // Literals
 TOKEN: {
   <INT_LITERAL: <DIGITS>>
+| <LONG_LITERAL: <INT_LITERAL> ("l" | "L")>
+| <EXPONENT: ("e" | "E") ( "+" | "-" )? <DIGITS>>
+| <SUFFIX: ("d" | "D")>
+| <DOUBLE_LITERAL: ( <DIGITS> "." (<DIGITS>)? (<EXPONENT>)? (<SUFFIX>)? 
+                   | "." <DIGITS> (<EXPONENT>)? (<SUFFIX>)?
+                   | <DIGITS> <EXPONENT> (<SUFFIX>)?
+                   | <DIGITS> <SUFFIX>
+                   )>
 | <CHAR_LITERAL: "'" ( <ESC> | ~[ "'", "\\" ] ) "'">
 | <STRING_LITERAL: "\"" ( <ESC> | ~[ "\"", "\\" ] )* "\"">
 | <#DIGITS: <DIGIT> ( <DIGIT> )* >
