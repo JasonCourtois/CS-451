@@ -45,60 +45,104 @@ However in BNF, your present it as [a]. This mixup caused some confusion when fi
 
 [Problem 5 (Operators: Parser)]
 
-Goal: ...
+Goal: Add support for various operators into our JavaCC parser
 
-Approach: ...
+Approach: I modified various sections of code in j--.jj in order to get the following operators working:
+
+Operators: / % 
+    - Modified multiplicativeExpression() using the existing code and language spec as a template
+
+Operators: -= *= /= %= 
+    - Modified assignmentExpression() using existing code and language spec as template
+
+Operator: !=
+    - Modified equalityExpression() using existing code and language spec as template
+
+Operators: >= <
+    - Modified relationalExpression() using existing code and language spec as template
+
+Operator: ||
+    - Added conditionalOrExpression() following the syntax and convention of other functions
+      such as conditionalAndExpression().
+    - One interesting thing about this operator, in order to get full points on GradeScope I 
+      needed to complete problem 7, since part of this implementation involves conditionalExpression()
+      calling conditionalOrExpression().
+
+Operators: + (unary) --
+    - Modified unaryExpression() using existing code and language spec as template
+
+Operator: ++
+    - Modified postfixExpression() using existing code and language spec as template
 
 [Problem 6 (Long and Double Basic Types)]
 
-Goal: ...
+Goal: Add parsing support for double and long into our JavaCC parser
 
-Approach: ...
+Approach: To add parsing support of double and long types, I modified j--.jj in two
+different places. Firstly, I added double and long to basicType(). Then I added parsing
+DOUBLE_LITERAL and LONG_LITERAL in the literal() function.
 
 [Problem 7 (Conditional Expression)]
 
-Goal: ...
+Goal: Add parsing support for conditional expressions in our JavaCC parser
 
-Approach: ...
+Approach: To add support for conditional expression, I added a function in j--.jj: conditionalExpression();
+This function parses a conditional expression according to the javalite language specification
+and returns the AST for a conditionalExpression. I also modified assignmentExpression to call
+conditionalExpression as defined by the language spec. 
 
 [Problem 8 (Do Statement)]
 
-Goal: ...
+Goal: Add parsing support for DO statements in our JavaCC parser
 
-Approach: ...
+Approach: To add support for DO statements, I just had to modify the statement() code 
+in j--.jj. In this method, I added support for DO statements using the javalite language 
+specification as a reference. No new helper methods were needed for parsing DO besides the 
+already existing statement() and parExpression() methods.
 
 [Problem 9 (For Statement)]
 
-Goal: ...
+Goal: Add support for FOR statements in our JavaCC parser
 
-Approach: ...
+Approach: In order to add support for FOR statements, I needed to add two helper methods
+in j--.jj. These methods were forInit() and forUpdate(). They parsed lists of statements needed
+for different parts of the FOR loop. Once these methods were implemented according to the javalite
+language spec, I modified the statement() method to add the parsing for FOR statements.
 
 [Problem 10 (Break Statement)]
 
-Goal: ...
+Goal: Add support for BREAK statements in our JavaCC parser
 
-Approach: ...
+Approach: To add support for BREAK statements, I simply added another case to statement()
+in j--.jj following the javalite language spec. I first parse a BREAK token, followed by a
+SEMI. Then I return the appropriate AST representation for the BREAK statement.
 
 [Problem 11 (Continue Statement)]
 
-Goal: ...
+Goal: Add support for BREAK statements in our JavaCC parser
 
-Approach: ...
+Approach: To add support for CONTINUE statements, I simply added another case to statement()
+in j--.jj following the javalite language spec. I first parse a CONTINUE token, followed by a
+SEMI. Then I return the appropriate AST representation for the CONTINUE statement.
 
 [Problem 12 (Switch Statement)]
 
-Goal: ...
+Goal: Add support for SWITCH statements in our JavaCC parser
 
-Approach: ...
+Approach: To add support for SWITCH statements I first had to add a couple different helper
+methods in j--.jj to parse different parts of the SWITCH statement. I first added switchLabel(),
+that parses a switchLabel expression and returns it if one was found and null on the default case.
+I then added a method that parses a switchBlockStatementGroup(). I followed the javalite spec 
+for the implementation of these methods, and used my own implementation of the methods from 
+Parser.java as an outline on how the code should look. Lastly, I added parsing support for SWITCH
+statements in the statement() method following the javalite language spec. 
 
 2. Did you receive any help? List the sources along with a short description of the help received.
 
 Source                               Help Received
 ------                               -------------
 
-...                                  ...
 
 3. List any other comments here. Feel free to provide any feedback on how much you learned from
 doing the assignment, and whether you enjoyed doing it.
 
-...
