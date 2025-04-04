@@ -139,6 +139,15 @@ TOKEN: {
 | <TRUE: "true">
 | <VOID: "void">
 | <WHILE: "while">
+| <BREAK: "break">
+| <CASE: "case">
+| <CONTINUE: "continue">
+| <DEFAULT_LITERAL: "default">
+| <DO: "do">
+| <DOUBLE: "double">
+| <FOR: "for">
+| <LONG: "long">
+| <SWITCH: "switch">
 }
 
 // Separators
