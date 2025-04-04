@@ -106,6 +106,13 @@ SKIP: { <END_COMMENT: "\n" | "\r" | "\r\n">: DEFAULT }
 <IN_SINGLE_LINE_COMMENT>
 SKIP: { <COMMENT: ~[]> }
 
+// Multi line comment -- ignored
+SKIP: { <BEGIN_MULTI_LINE_COMMENT: "/*">: IN_MULTI_LINE_COMMENT }
+<IN_MULTI_LINE_COMMENT>
+SKIP: { <END_MULTI_LINE_COMMENT: "*/">: DEFAULT }
+<IN_MULTI_LINE_COMMENT>
+SKIP: { <MULTI_LINE_COMMENT: ~[]> }
+
 // Reserved words
 TOKEN: {
   <ABSTRACT: "abstract">
