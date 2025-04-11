@@ -1,6 +1,8 @@
 package jminusminus;
 
 import static jminusminus.CLConstants.IADD;
+import static jminusminus.CLConstants.LADD;
+import static jminusminus.CLConstants.DADD;
 
 /**
  * This abstract base class is the AST node for an assignment operation.
@@ -119,7 +121,14 @@ class JPlusAssignOp extends JAssignment {
         } else {
             ((JLhs) lhs).codegenLoadLhsRvalue(output);
             rhs.codegen(output);
-            output.addNoArgInstruction(IADD);
+            // Add appropriate instruction based on result type.
+            if (type == Type.INT) {
+                output.addNoArgInstruction(IADD);
+            } else if (type == Type.LONG) {
+                output.addNoArgInstruction(LADD);
+            } else if (type == Type.DOUBLE) {
+                output.addNoArgInstruction(DADD);
+            }
         }
         if (!isStatementExpression) {
             ((JLhs) lhs).codegenDuplicateRvalue(output);

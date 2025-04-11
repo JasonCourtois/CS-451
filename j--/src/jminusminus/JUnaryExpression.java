@@ -5,6 +5,8 @@ import static jminusminus.CLConstants.IADD;
 import static jminusminus.CLConstants.ICONST_0;
 import static jminusminus.CLConstants.ICONST_1;
 import static jminusminus.CLConstants.INEG;
+import static jminusminus.CLConstants.LNEG;
+import static jminusminus.CLConstants.DNEG;
 import static jminusminus.CLConstants.ISUB;
 
 /**
@@ -123,7 +125,15 @@ class JNegateOp extends JUnaryExpression {
      */
     public void codegen(CLEmitter output) {
         operand.codegen(output);
-        output.addNoArgInstruction(INEG);
+
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(INEG);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LNEG);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DNEG);
+        }
     }
 }
 

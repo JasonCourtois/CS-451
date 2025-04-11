@@ -1,10 +1,20 @@
 package jminusminus;
 
 import static jminusminus.CLConstants.IADD;
+import static jminusminus.CLConstants.LADD;
+import static jminusminus.CLConstants.DADD;
 import static jminusminus.CLConstants.IDIV;
+import static jminusminus.CLConstants.LDIV;
+import static jminusminus.CLConstants.DDIV;
 import static jminusminus.CLConstants.IMUL;
+import static jminusminus.CLConstants.LMUL;
+import static jminusminus.CLConstants.DMUL;
 import static jminusminus.CLConstants.IREM;
+import static jminusminus.CLConstants.LREM;
+import static jminusminus.CLConstants.DREM;
 import static jminusminus.CLConstants.ISUB;
+import static jminusminus.CLConstants.LSUB;
+import static jminusminus.CLConstants.DSUB;
 
 /**
  * This abstract base class is the AST node for a binary expression --- an expression with a binary operator and two
@@ -94,7 +104,14 @@ class JMultiplyOp extends JBinaryExpression {
     public void codegen(CLEmitter output) {
         lhs.codegen(output);
         rhs.codegen(output);
-        output.addNoArgInstruction(IMUL);
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(IMUL);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LMUL);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DMUL);
+        }
     }
 }
 
@@ -139,7 +156,14 @@ class JPlusOp extends JBinaryExpression {
     public void codegen(CLEmitter output) {
         lhs.codegen(output);
         rhs.codegen(output);
-        output.addNoArgInstruction(IADD);
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(IADD);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LADD);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DADD);
+        }
     }
 }
 
@@ -179,7 +203,14 @@ class JSubtractOp extends JBinaryExpression {
     public void codegen(CLEmitter output) {
         lhs.codegen(output);
         rhs.codegen(output);
-        output.addNoArgInstruction(ISUB);
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(ISUB);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LSUB);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DSUB);
+        }
     }
 }
 
@@ -221,7 +252,14 @@ class JDivideOp extends JBinaryExpression {
         // Run codegen on each side, then run integer division instruction.
         lhs.codegen(output);
         rhs.codegen(output);
-        output.addNoArgInstruction(IDIV);
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(IDIV);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LDIV);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DDIV);
+        }
     }
 }
 
@@ -263,6 +301,13 @@ class JRemainderOp extends JBinaryExpression {
         // Run codegen on each side, then run integer remainder instruction.
         lhs.codegen(output);
         rhs.codegen(output);
-        output.addNoArgInstruction(IREM);
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(IREM);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LREM);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DREM);
+        }
     }
 }
