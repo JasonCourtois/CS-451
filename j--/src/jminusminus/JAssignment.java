@@ -99,9 +99,12 @@ class JPlusAssignOp extends JAssignment {
             rhs = (new JStringConcatenationOp(line, lhs, rhs)).analyze(context);
             type = Type.STRING;
         } else {
-            lhs.type().mustMatchExpected(line(), Type.INT);
-            rhs.type().mustMatchExpected(line(), Type.INT);
-            type = Type.INT;
+            // Verify left hand side is either int, long or double
+            lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+            // Verify that right hand side matches left hand side
+            rhs.type().mustMatchExpected(line(), lhs.type);
+            // Set the return type as the type of right and left hand side
+            type = rhs.type;
         }
         return this;
     }

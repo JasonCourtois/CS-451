@@ -79,9 +79,12 @@ class JMultiplyOp extends JBinaryExpression {
     public JExpression analyze(Context context) {
         lhs = lhs.analyze(context);
         rhs = rhs.analyze(context);
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+        type = rhs.type;
         return this;
     }
 
@@ -120,9 +123,12 @@ class JPlusOp extends JBinaryExpression {
         if (lhs.type() == Type.STRING || rhs.type() == Type.STRING) {
             return (new JStringConcatenationOp(line, lhs, rhs)).analyze(context);
         } else {
-            lhs.type().mustMatchExpected(line(), Type.INT);
-            rhs.type().mustMatchExpected(line(), Type.INT);
-            type = Type.INT;
+            // Verify left hand side is either int, long or double
+            lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+            // Verify that right hand side matches left hand side
+            rhs.type().mustMatchExpected(line(), lhs.type);
+            // Set the return type as the type of right and left hand side
+            type = rhs.type;
         }
         return this;
     }
@@ -158,9 +164,12 @@ class JSubtractOp extends JBinaryExpression {
     public JExpression analyze(Context context) {
         lhs = lhs.analyze(context);
         rhs = rhs.analyze(context);
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+        type = rhs.type;
         return this;
     }
 
@@ -196,11 +205,12 @@ class JDivideOp extends JBinaryExpression {
         // Analyze left and right hand side.
         lhs = lhs.analyze(context);
         rhs = rhs.analyze(context);
-        // Verify that both sides are integers.
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        // Assert that the result of this division is an integer.
-        type = Type.INT;
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+        type = rhs.type;
         return this;
     }
 
@@ -237,11 +247,12 @@ class JRemainderOp extends JBinaryExpression {
         // Analyze left and right hand side.
         lhs = lhs.analyze(context);
         rhs = rhs.analyze(context);
-        // Verify that both sides are integers.
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        // Assert that the result of this division is an integer.
-        type = Type.INT;
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+        type = rhs.type;
         return this;
     }
 

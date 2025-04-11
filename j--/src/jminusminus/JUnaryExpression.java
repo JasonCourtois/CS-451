@@ -113,8 +113,8 @@ class JNegateOp extends JUnaryExpression {
      */
     public JExpression analyze(Context context) {
         operand = operand.analyze(context);
-        operand.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
+        operand.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        type = operand.type;
         return this;
     }
 
@@ -255,11 +255,11 @@ class JUnaryPlusOp extends JUnaryExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // Get context fom operand, and then verify that it is an integer.
+        // Get context fom operand, and then verify that it is an integer, long, or double.
         operand = operand.analyze(context);
-        operand.type().mustMatchExpected(line(), Type.INT);
+        operand.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
         // Once we have asserted operand is an int, set the result type to int.
-        type = Type.INT;
+        type = operand.type;
         return this;
     }
 
