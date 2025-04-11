@@ -3,6 +3,18 @@ package jminusminus;
 import static jminusminus.CLConstants.IADD;
 import static jminusminus.CLConstants.LADD;
 import static jminusminus.CLConstants.DADD;
+import static jminusminus.CLConstants.ISUB;
+import static jminusminus.CLConstants.LSUB;
+import static jminusminus.CLConstants.DSUB;
+import static jminusminus.CLConstants.IMUL;
+import static jminusminus.CLConstants.LMUL;
+import static jminusminus.CLConstants.DMUL;
+import static jminusminus.CLConstants.IDIV;
+import static jminusminus.CLConstants.LDIV;
+import static jminusminus.CLConstants.DDIV;
+import static jminusminus.CLConstants.IREM;
+import static jminusminus.CLConstants.LREM;
+import static jminusminus.CLConstants.DREM;
 
 /**
  * This abstract base class is the AST node for an assignment operation.
@@ -156,7 +168,21 @@ class JMinusAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        if (!(lhs instanceof JLhs)) {
+            JAST.compilationUnit.reportSemanticError(line(), "illegal lhs for assignment");
+            return this;
+        } else {
+            lhs = ((JLhs) lhs).analyzeLhs(context);
+        }
+        rhs = rhs.analyze(context);
+       
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+        type = rhs.type;
+       
         return this;
     }
 
@@ -164,7 +190,24 @@ class JMinusAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        ((JLhs) lhs).codegenLoadLhsLvalue(output);
+        ((JLhs) lhs).codegenLoadLhsRvalue(output);
+
+        rhs.codegen(output);
+
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(ISUB);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LSUB);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DSUB);
+        }
+        
+        if (!isStatementExpression) {
+            ((JLhs) lhs).codegenDuplicateRvalue(output);
+        }
+        ((JLhs) lhs).codegenStore(output);
     }
 }
 
@@ -187,7 +230,21 @@ class JStarAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        if (!(lhs instanceof JLhs)) {
+            JAST.compilationUnit.reportSemanticError(line(), "illegal lhs for assignment");
+            return this;
+        } else {
+            lhs = ((JLhs) lhs).analyzeLhs(context);
+        }
+        rhs = rhs.analyze(context);
+       
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+        type = rhs.type;
+       
         return this;
     }
 
@@ -195,7 +252,24 @@ class JStarAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        ((JLhs) lhs).codegenLoadLhsLvalue(output);
+        ((JLhs) lhs).codegenLoadLhsRvalue(output);
+
+        rhs.codegen(output);
+
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(IMUL);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LMUL);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DMUL);
+        }
+        
+        if (!isStatementExpression) {
+            ((JLhs) lhs).codegenDuplicateRvalue(output);
+        }
+        ((JLhs) lhs).codegenStore(output);
     }
 }
 
@@ -218,7 +292,21 @@ class JDivAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        if (!(lhs instanceof JLhs)) {
+            JAST.compilationUnit.reportSemanticError(line(), "illegal lhs for assignment");
+            return this;
+        } else {
+            lhs = ((JLhs) lhs).analyzeLhs(context);
+        }
+        rhs = rhs.analyze(context);
+       
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+        type = rhs.type;
+
         return this;
     }
 
@@ -226,7 +314,24 @@ class JDivAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        ((JLhs) lhs).codegenLoadLhsLvalue(output);
+        ((JLhs) lhs).codegenLoadLhsRvalue(output);
+
+        rhs.codegen(output);
+
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(IDIV);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LDIV);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DDIV);
+        }
+        
+        if (!isStatementExpression) {
+            ((JLhs) lhs).codegenDuplicateRvalue(output);
+        }
+        ((JLhs) lhs).codegenStore(output);
     }
 }
 
@@ -249,7 +354,20 @@ class JRemAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        if (!(lhs instanceof JLhs)) {
+            JAST.compilationUnit.reportSemanticError(line(), "illegal lhs for assignment");
+            return this;
+        } else {
+            lhs = ((JLhs) lhs).analyzeLhs(context);
+        }
+        rhs = rhs.analyze(context);
+       
+        // Verify left hand side is either int, long or double
+        lhs.type().mustMatchOneOf(line(), Type.INT, Type.LONG, Type.DOUBLE);
+        // Verify that right hand side matches left hand side
+        rhs.type().mustMatchExpected(line(), lhs.type);
+        // Set the return type as the type of right and left hand side
+
         return this;
     }
 
@@ -257,6 +375,23 @@ class JRemAssignOp extends JAssignment {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        ((JLhs) lhs).codegenLoadLhsLvalue(output);
+        ((JLhs) lhs).codegenLoadLhsRvalue(output);
+
+        rhs.codegen(output);
+
+        // Add appropriate instruction based on result type.
+        if (type == Type.INT) {
+            output.addNoArgInstruction(IREM);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LREM);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DREM);
+        }
+        
+        if (!isStatementExpression) {
+            ((JLhs) lhs).codegenDuplicateRvalue(output);
+        }
+        ((JLhs) lhs).codegenStore(output);
     }
 }
