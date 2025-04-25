@@ -1,5 +1,7 @@
 package jminusminus;
 
+import static jminusminus.CLConstants.GOTO;
+
 import java.util.ArrayList;
 
 /**
@@ -40,7 +42,32 @@ class JForStatement extends JStatement {
      * {@inheritDoc}
      */
     public JForStatement analyze(Context context) {
-        // TODO
+        LocalContext localContext = new LocalContext(context);
+
+        // Init, condition, and update are all optional in for statements. Whenever using these variables we must check they are not null.
+
+        // If init is present, analyze every statement it has
+        if (init != null) {
+            for (JStatement statement : init) {
+                statement = (JStatement) statement.analyze(localContext);
+            }
+        }
+        
+        // If condition is present, analyze it
+        if (condition != null) {
+            condition = condition.analyze(localContext);
+            condition.type().mustMatchExpected(line, Type.BOOLEAN);
+        }
+        
+        // If update is present, analyze every statement it has
+        if (update != null) {
+            for (JStatement statement : update) {
+                statement = (JStatement) statement.analyze(localContext);
+            }
+        }
+        
+        body = (JStatement) body.analyze(localContext);
+        
         return this;
     }
 
@@ -48,7 +75,36 @@ class JForStatement extends JStatement {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        // Label for test condition of for loop.
+        String testLabel = output.createLabel();
+        // Label for end of for loop.
+        String endLabel = output.createLabel();
+
+        // Preform codegen on init statements if present
+        if (init != null) {
+            for (JStatement statement : init) {
+                statement.codegen(output);
+            }
+        }
+
+        // Add label for our test condition, and preform codegen if present.
+        output.addLabel(testLabel);
+        if (condition != null) {
+            condition.codegen(output, endLabel, false);
+        }
+        
+        // Run the code of our body and any update statements if present
+        body.codegen(output);
+        if (update != null) {
+            for (JStatement statement : update) {
+                statement.codegen(output);
+            }
+        }
+        
+        // Jump back to our test condition.
+        output.addBranchInstruction(GOTO, testLabel);
+        // We will only reach this label once the for loop terminates.
+        output.addLabel(endLabel);
     }
 
     /**
