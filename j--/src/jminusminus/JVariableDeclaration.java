@@ -41,6 +41,11 @@ class JVariableDeclaration extends JStatement {
                         "the variable " + decl.name() + " shadows another local variable");
             }
 
+            // If we have a double or long, advance offset one more time to account for these types having an offset of 2.
+            if (defn.type() == Type.LONG || defn.type() == Type.DOUBLE) {
+                ((LocalContext) context).nextOffset();
+            }
+
             // Declare it in the local context.
             context.addEntry(decl.line(), decl.name(), defn);
 

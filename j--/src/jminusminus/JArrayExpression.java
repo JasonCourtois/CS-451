@@ -6,6 +6,8 @@ import static jminusminus.CLConstants.BALOAD;
 import static jminusminus.CLConstants.BASTORE;
 import static jminusminus.CLConstants.CALOAD;
 import static jminusminus.CLConstants.CASTORE;
+import static jminusminus.CLConstants.DALOAD;
+import static jminusminus.CLConstants.DASTORE;
 import static jminusminus.CLConstants.DUP2;
 import static jminusminus.CLConstants.DUP2_X1;
 import static jminusminus.CLConstants.DUP_X2;
@@ -13,6 +15,8 @@ import static jminusminus.CLConstants.IALOAD;
 import static jminusminus.CLConstants.IASTORE;
 import static jminusminus.CLConstants.IFEQ;
 import static jminusminus.CLConstants.IFNE;
+import static jminusminus.CLConstants.LALOAD;
+import static jminusminus.CLConstants.LASTORE;
 
 /**
  * The AST for an array indexing operation. It has an expression denoting an array object and an expression denoting
@@ -69,6 +73,10 @@ class JArrayExpression extends JExpression implements JLhs {
         indexExpr.codegen(output);
         if (type == Type.INT) {
             output.addNoArgInstruction(IALOAD);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LALOAD);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DALOAD);
         } else if (type == Type.BOOLEAN) {
             output.addNoArgInstruction(BALOAD);
         } else if (type == Type.CHAR) {
@@ -101,6 +109,10 @@ class JArrayExpression extends JExpression implements JLhs {
         output.addNoArgInstruction(type == Type.STRING ? DUP2_X1 : DUP2);
         if (type == Type.INT) {
             output.addNoArgInstruction(IALOAD);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LALOAD);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DALOAD);
         } else if (type == Type.BOOLEAN) {
             output.addNoArgInstruction(BALOAD);
         } else if (type == Type.CHAR) {
@@ -123,6 +135,10 @@ class JArrayExpression extends JExpression implements JLhs {
     public void codegenStore(CLEmitter output) {
         if (type == Type.INT) {
             output.addNoArgInstruction(IASTORE);
+        } else if (type == Type.LONG) {
+            output.addNoArgInstruction(LASTORE);
+        } else if (type == Type.DOUBLE) {
+            output.addNoArgInstruction(DASTORE);
         } else if (type == Type.BOOLEAN) {
             output.addNoArgInstruction(BASTORE);
         } else if (type == Type.CHAR) {

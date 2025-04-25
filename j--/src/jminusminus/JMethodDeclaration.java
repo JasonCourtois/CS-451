@@ -4,8 +4,12 @@ import java.util.ArrayList;
 
 import static jminusminus.CLConstants.ACONST_NULL;
 import static jminusminus.CLConstants.ARETURN;
+import static jminusminus.CLConstants.DCONST_0;
+import static jminusminus.CLConstants.DRETURN;
 import static jminusminus.CLConstants.ICONST_0;
 import static jminusminus.CLConstants.IRETURN;
+import static jminusminus.CLConstants.LCONST_0;
+import static jminusminus.CLConstants.LRETURN;
 import static jminusminus.CLConstants.RETURN;
 
 /**
@@ -145,6 +149,12 @@ class JMethodDeclaration extends JAST implements JMember {
         for (JFormalParameter param : params) {
             LocalVariableDefn defn = new LocalVariableDefn(param.type(), this.context.nextOffset());
             defn.initialize();
+
+            // If we have a double or long, advance offset one more time to account for these types having an offset of 2.
+            if (param.type() == Type.LONG || param.type() == Type.DOUBLE) {
+                this.context.nextOffset();
+            }
+            
             this.context.addEntry(param.line(), param.name(), defn);
         }
 
@@ -172,6 +182,12 @@ class JMethodDeclaration extends JAST implements JMember {
         } else if (returnType == Type.INT || returnType == Type.BOOLEAN || returnType == Type.CHAR) {
             partial.addNoArgInstruction(ICONST_0);
             partial.addNoArgInstruction(IRETURN);
+        } else if (returnType == Type.DOUBLE) {
+            partial.addNoArgInstruction(DCONST_0);
+            partial.addNoArgInstruction(DRETURN);
+        } else if (returnType == Type.LONG) {
+            partial.addNoArgInstruction(LCONST_0);
+            partial.addNoArgInstruction(LRETURN);
         } else {
             partial.addNoArgInstruction(ACONST_NULL);
             partial.addNoArgInstruction(ARETURN);

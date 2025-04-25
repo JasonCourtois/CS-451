@@ -67,6 +67,12 @@ class JConstructorDeclaration extends JMethodDeclaration {
         for (JFormalParameter param : params) {
             LocalVariableDefn defn = new LocalVariableDefn(param.type(), this.context.nextOffset());
             defn.initialize();
+
+            // If we have a double or long, advance offset one more time to account for these types having an offset of 2.
+            if (param.type() == Type.LONG || param.type() == Type.DOUBLE) {
+                this.context.nextOffset();
+            }
+
             this.context.addEntry(param.line(), param.name(), defn);
         }
 

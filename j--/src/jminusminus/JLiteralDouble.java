@@ -31,7 +31,7 @@ class JLiteralDouble extends JExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        type = Type.DOUBLE;
         return this;
     }
 
@@ -39,7 +39,8 @@ class JLiteralDouble extends JExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        double i = toDouble();
+        output.addLDCInstruction(i);
     }
 
     /**

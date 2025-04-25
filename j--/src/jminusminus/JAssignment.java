@@ -367,7 +367,7 @@ class JRemAssignOp extends JAssignment {
         // Verify that right hand side matches left hand side
         rhs.type().mustMatchExpected(line(), lhs.type);
         // Set the return type as the type of right and left hand side
-
+        type = rhs.type;
         return this;
     }
 
