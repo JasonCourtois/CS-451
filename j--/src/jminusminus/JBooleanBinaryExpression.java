@@ -150,7 +150,12 @@ class JLogicalOrOp extends JBooleanBinaryExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        // Both sides of expression mut be booleans
+        lhs = lhs.analyze(context);
+        rhs = rhs.analyze(context);
+        lhs.type().mustMatchExpected(line(), Type.BOOLEAN);
+        rhs.type().mustMatchExpected(line(), Type.BOOLEAN);
+        type = Type.BOOLEAN;
         return this;
     }
 
@@ -158,7 +163,26 @@ class JLogicalOrOp extends JBooleanBinaryExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output, String targetLabel, boolean onTrue) {
-        // TODO
+        if (onTrue) {
+            lhs.codegen(output, targetLabel, true);
+            rhs.codegen(output, targetLabel, true);
+        } else {
+            // In the case of !(lhs || rhs), we jump to target label if both sides are false
+            // First we check if the lhs is false, and jump to 'firstFalse'. 
+            // In 'firstFalse', we check if rhs is also false, and if it is we jump to target label. 
+            // Otherwise we jump to the false label after checking LHS.
+
+            // Jump to this label if lhs is false
+            String firstFalse = output.createLabel();
+            // Jump to this label if lhs is true
+            String falseLabel = output.createLabel();
+
+            lhs.codegen(output, firstFalse, false);
+            output.addBranchInstruction(GOTO, falseLabel);
+            output.addLabel(firstFalse);
+            rhs.codegen(output, targetLabel, false);
+            output.addLabel(falseLabel);
+        }
     }
 }
 
