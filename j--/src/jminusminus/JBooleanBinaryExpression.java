@@ -224,13 +224,13 @@ class JNotEqualOp extends JBooleanBinaryExpression {
         // Add branch instructions based on type and condition
         if (lhs.type().isReference()) {
             output.addBranchInstruction(onTrue ? IF_ACMPNE : IF_ACMPEQ, targetLabel);
-        } if (lhs.type() == Type.LONG) {
+        } else if (lhs.type() == Type.LONG) {
             output.addNoArgInstruction(LCMP);
             output.addBranchInstruction(onTrue ? IFNE : IFEQ, targetLabel);
-        } if (lhs.type() == Type.DOUBLE) {
+        } else if (lhs.type() == Type.DOUBLE) {
             output.addNoArgInstruction(DCMPG);
             output.addBranchInstruction(onTrue ? IFNE : IFEQ, targetLabel);
-        } else {
+        } else if (lhs.type() == Type.INT) {
             output.addBranchInstruction(onTrue ? IF_ICMPNE : IF_ICMPEQ, targetLabel);
         }
     }
