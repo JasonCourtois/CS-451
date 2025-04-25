@@ -12,6 +12,12 @@ class JSwitchStatement extends JStatement {
     // List of switch-statement groups.
     private ArrayList<SwitchStatementGroup> switchStmtGroups;
 
+    // Determines if a break is present
+    private boolean hasBreak;
+
+    // Stores the name of the break label
+    private String breakLabel;
+
     /**
      * Constructs an AST node for a switch-statement.
      *
@@ -26,10 +32,28 @@ class JSwitchStatement extends JStatement {
     }
 
     /**
+     * Sets the hasBreak variable to true, signifying that the control flow statement has a break in it.
+     */
+    public void hasBreak() {
+        hasBreak = true;
+    }
+
+    /**
+     * @return String of break label for this control flow statement
+     */
+    public String breakLabel() {
+        return breakLabel;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public JStatement analyze(Context context) {
-        // TODO
+        // Push this instance into JMember enclosing statement
+        JMember.enclosingStatement.push(this);
+
+        // Pop this instance into JMember enclosing statement
+        JMember.enclosingStatement.pop();
         return this;
     }
 
@@ -37,7 +61,15 @@ class JSwitchStatement extends JStatement {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
-        // TODO
+        // Create a break label if one is present
+        if (hasBreak) {
+            breakLabel = output.createLabel();
+        }
+
+        // TODO: break is totally different lol
+        if (hasBreak) {
+            output.addLabel(breakLabel);
+        }
     }
 
     /**

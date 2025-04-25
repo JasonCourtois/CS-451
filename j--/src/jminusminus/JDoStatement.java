@@ -10,6 +10,12 @@ class JDoStatement extends JStatement {
     // Test expression.
     private JExpression condition;
 
+    // Determines if a break is present
+    private boolean hasBreak;
+
+    // Stores the name of the break label
+    private String breakLabel;
+
     /**
      * Constructs an AST node for a do-statement.
      *
@@ -24,14 +30,34 @@ class JDoStatement extends JStatement {
     }
 
     /**
+     * Sets the hasBreak variable to true, signifying that the control flow statement has a break in it.
+     */
+    public void hasBreak() {
+        hasBreak = true;
+    }
+
+    /**
+     * @return String of break label for this control flow statement
+     */
+    public String breakLabel() {
+        return breakLabel;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public JStatement analyze(Context context) {
+        // Push this instance into JMember enclosing statement
+        JMember.enclosingStatement.push(this);
+
         // Analyze body and condition of code.
         body = (JStatement) body.analyze(context);
         condition = condition.analyze(context);
         // Confirm that the condition is a boolean.
         condition.type().mustMatchExpected(line(), Type.BOOLEAN);
+        
+        // Pop this instance into JMember enclosing statement
+        JMember.enclosingStatement.pop();
         return this;
     }
 
@@ -39,6 +65,10 @@ class JDoStatement extends JStatement {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
+        // Create a break label if one is present
+        if (hasBreak) {
+            breakLabel = output.createLabel();
+        }
         // Label placed at start of do loop.
         String topLabel = output.createLabel();
         output.addLabel(topLabel);
@@ -46,6 +76,11 @@ class JDoStatement extends JStatement {
         body.codegen(output);
         // Loop back to start if condition is true.
         condition.codegen(output, topLabel, true);
+
+        // Break statement skips to end of do statement
+        if (hasBreak) {
+            output.addLabel(breakLabel);
+        }
     }
 
     /**

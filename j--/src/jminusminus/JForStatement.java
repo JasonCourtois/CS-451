@@ -20,6 +20,12 @@ class JForStatement extends JStatement {
     // The body.
     private JStatement body;
 
+    // Determines if a break is present
+    private boolean hasBreak;
+
+    // Stores the name of the break label
+    private String breakLabel;
+
     /**
      * Constructs an AST node for a for-statement.
      *
@@ -39,9 +45,26 @@ class JForStatement extends JStatement {
     }
 
     /**
+     * Sets the hasBreak variable to true, signifying that the control flow statement has a break in it.
+     */
+    public void hasBreak() {
+        hasBreak = true;
+    }
+
+    /**
+     * @return String of break label for this control flow statement
+     */
+    public String breakLabel() {
+        return breakLabel;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public JForStatement analyze(Context context) {
+        // Push this instance into JMember enclosing statement
+        JMember.enclosingStatement.push(this);
+
         LocalContext localContext = new LocalContext(context);
 
         // Init, condition, and update are all optional in for statements. Whenever using these variables we must check they are not null.
@@ -68,6 +91,9 @@ class JForStatement extends JStatement {
         
         body = (JStatement) body.analyze(localContext);
         
+
+        // Pop this instance into JMember enclosing statement
+        JMember.enclosingStatement.pop();
         return this;
     }
 
@@ -75,6 +101,11 @@ class JForStatement extends JStatement {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output) {
+        // Create a break label if one is present
+        if (hasBreak) {
+            breakLabel = output.createLabel();
+        }
+
         // Label for test condition of for loop.
         String testLabel = output.createLabel();
         // Label for end of for loop.
@@ -105,6 +136,11 @@ class JForStatement extends JStatement {
         output.addBranchInstruction(GOTO, testLabel);
         // We will only reach this label once the for loop terminates.
         output.addLabel(endLabel);
+
+        // Break label skips to end of for statement
+        if (hasBreak) {
+            output.addLabel(breakLabel);
+        }
     }
 
     /**
