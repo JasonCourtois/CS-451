@@ -1,12 +1,16 @@
 package jminusminus;
 
+import static jminusminus.CLConstants.DCMPG;
 import static jminusminus.CLConstants.GOTO;
 import static jminusminus.CLConstants.ICONST_0;
 import static jminusminus.CLConstants.ICONST_1;
+import static jminusminus.CLConstants.IFEQ;
+import static jminusminus.CLConstants.IFNE;
 import static jminusminus.CLConstants.IF_ACMPEQ;
 import static jminusminus.CLConstants.IF_ACMPNE;
 import static jminusminus.CLConstants.IF_ICMPEQ;
 import static jminusminus.CLConstants.IF_ICMPNE;
+import static jminusminus.CLConstants.LCMP;
 
 /**
  * This abstract base class is the AST node for binary expressions that return booleans.
@@ -47,7 +51,8 @@ class JEqualOp extends JBooleanBinaryExpression {
     /**
      * Constructs an AST node for an equality expression.
      *
-     * @param line line number in which the equality expression occurs in the source file.
+     * @param line line number in which the equality expression occurs in the source
+     *             file.
      * @param lhs  lhs operand.
      * @param rhs  rhs operand.
      */
@@ -88,7 +93,8 @@ class JLogicalAndOp extends JBooleanBinaryExpression {
     /**
      * Constructs an AST node for a logical-and expression.
      *
-     * @param line line in which the logical-and expression occurs in the source file.
+     * @param line line in which the logical-and expression occurs in the source
+     *             file.
      * @param lhs  lhs operand.
      * @param rhs  rhs operand.
      */
@@ -131,7 +137,8 @@ class JLogicalOrOp extends JBooleanBinaryExpression {
     /**
      * Constructs an AST node for a logical-or expression.
      *
-     * @param line line in which the logical-or expression occurs in the source file.
+     * @param line line in which the logical-or expression occurs in the source
+     *             file.
      * @param lhs  lhs operand.
      * @param rhs  rhs operand.
      */
@@ -162,7 +169,8 @@ class JNotEqualOp extends JBooleanBinaryExpression {
     /**
      * Constructs an AST node for not-equal-to (!=) expression.
      *
-     * @param line line number in which the not-equal-to (!=) expression occurs in the source file.
+     * @param line line number in which the not-equal-to (!=) expression occurs in
+     *             the source file.
      * @param lhs  lhs operand.
      * @param rhs  rhs operand.
      */
@@ -175,7 +183,11 @@ class JNotEqualOp extends JBooleanBinaryExpression {
      * {@inheritDoc}
      */
     public JExpression analyze(Context context) {
-        // TODO
+        // Verify the lhs and rhs sides share the same type
+        lhs = lhs.analyze(context);
+        rhs = rhs.analyze(context);
+        lhs.type().mustMatchExpected(line(), rhs.type());
+        type = Type.BOOLEAN;
         return this;
     }
 
@@ -183,6 +195,19 @@ class JNotEqualOp extends JBooleanBinaryExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output, String targetLabel, boolean onTrue) {
-        // TODO
+        lhs.codegen(output);
+        rhs.codegen(output);
+        // Add branch instructions based on type and condition
+        if (lhs.type().isReference()) {
+            output.addBranchInstruction(onTrue ? IF_ACMPNE : IF_ACMPEQ, targetLabel);
+        } if (lhs.type() == Type.LONG) {
+            output.addNoArgInstruction(LCMP);
+            output.addBranchInstruction(onTrue ? IFNE : IFEQ, targetLabel);
+        } if (lhs.type() == Type.DOUBLE) {
+            output.addNoArgInstruction(DCMPG);
+            output.addBranchInstruction(onTrue ? IFNE : IFEQ, targetLabel);
+        } else {
+            output.addBranchInstruction(onTrue ? IF_ICMPNE : IF_ICMPEQ, targetLabel);
+        }
     }
 }

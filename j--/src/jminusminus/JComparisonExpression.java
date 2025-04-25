@@ -2,6 +2,12 @@ package jminusminus;
 
 import static jminusminus.CLConstants.IF_ICMPGT;
 import static jminusminus.CLConstants.IF_ICMPLE;
+import static jminusminus.CLConstants.IF_ICMPLT;
+import static jminusminus.CLConstants.IF_ICMPGE;
+import static jminusminus.CLConstants.LCMP;
+import static jminusminus.CLConstants.IFGE;
+import static jminusminus.CLConstants.IFLT;
+import static jminusminus.CLConstants.DCMPG;
 
 /**
  * This abstract base class is the AST node for a comparison expression.
@@ -103,7 +109,18 @@ class JGreaterEqualOp extends JComparisonExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output, String targetLabel, boolean onTrue) {
-        // TODO
+        lhs.codegen(output);
+        rhs.codegen(output);
+        // Add correct branch instruction based on type and condition
+        if (lhs.type() == Type.LONG) {
+            output.addNoArgInstruction(LCMP);
+            output.addBranchInstruction(onTrue ? IFGE : IFLT, targetLabel);
+        } else if (lhs.type() == Type.DOUBLE) {
+            output.addNoArgInstruction(DCMPG);
+            output.addBranchInstruction(onTrue ? IFGE : IFLT, targetLabel);
+        } else {
+            output.addBranchInstruction(onTrue ? IF_ICMPGE : IF_ICMPLT, targetLabel);
+        }
     }
 }
 
@@ -126,6 +143,17 @@ class JLessThanOp extends JComparisonExpression {
      * {@inheritDoc}
      */
     public void codegen(CLEmitter output, String targetLabel, boolean onTrue) {
-        // TODO
+        lhs.codegen(output);
+        rhs.codegen(output);
+        // Add correct branch instruction based on type and condition
+        if (lhs.type() == Type.LONG) {
+            output.addNoArgInstruction(LCMP);
+            output.addBranchInstruction(onTrue ? IFLT : IFGE, targetLabel);
+        } else if (lhs.type() == Type.DOUBLE) {
+            output.addNoArgInstruction(DCMPG);
+            output.addBranchInstruction(onTrue ? IFLT : IFGE, targetLabel);
+        } else {
+            output.addBranchInstruction(onTrue ? IF_ICMPLT : IF_ICMPGE, targetLabel);
+        }
     }
 }
