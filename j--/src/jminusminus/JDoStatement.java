@@ -16,6 +16,12 @@ class JDoStatement extends JStatement {
     // Stores the name of the break label
     private String breakLabel;
 
+    // Determines if a continue is present
+    private boolean hasContinue;
+
+    // Stores the name of the continue label
+    private String continueLabel;
+
     /**
      * Constructs an AST node for a do-statement.
      *
@@ -44,6 +50,20 @@ class JDoStatement extends JStatement {
     }
 
     /**
+     * Sets the hasContinue variable to true, signifying that the control flow statement has a continue in it.
+     */
+    public void hasContinue() {
+        hasContinue = true;
+    }
+
+    /**
+     * @return String of continue label for this control flow statement
+     */
+    public String continueLabel() {
+        return continueLabel;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public JStatement analyze(Context context) {
@@ -69,11 +89,24 @@ class JDoStatement extends JStatement {
         if (hasBreak) {
             breakLabel = output.createLabel();
         }
+
+        // Create a continue label if one is present
+        if (hasContinue) {
+            continueLabel = output.createLabel();
+        }
+
         // Label placed at start of do loop.
         String topLabel = output.createLabel();
         output.addLabel(topLabel);
+
         // Generate code for body.
         body.codegen(output);
+        
+        // If there is a continue statement, put label at the end of the body
+        if (hasContinue) {
+            output.addLabel(continueLabel);
+        }
+
         // Loop back to start if condition is true.
         condition.codegen(output, topLabel, true);
 

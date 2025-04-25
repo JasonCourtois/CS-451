@@ -18,6 +18,12 @@ class JWhileStatement extends JStatement {
     // Stores the name of the break label
     private String breakLabel;
 
+    // Determines if a continue is present
+    private boolean hasContinue;
+
+    // Stores the name of the continue label
+    private String continueLabel;
+
     /**
      * Constructs an AST node for a while-statement.
      *
@@ -46,6 +52,20 @@ class JWhileStatement extends JStatement {
     }
 
     /**
+     * Sets the hasContinue variable to true, signifying that the control flow statement has a continue in it.
+     */
+    public void hasContinue() {
+        hasContinue = true;
+    }
+
+    /**
+     * @return String of continue label for this control flow statement
+     */
+    public String continueLabel() {
+        return continueLabel;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public JWhileStatement analyze(Context context) {
@@ -70,11 +90,22 @@ class JWhileStatement extends JStatement {
             breakLabel = output.createLabel();
         }
 
+        // Create a continue label if one is present
+        if (hasContinue) {
+            continueLabel = output.createLabel();
+        }
+
         String testLabel = output.createLabel();
         String endLabel = output.createLabel();
         output.addLabel(testLabel);
         condition.codegen(output, endLabel, false);
         body.codegen(output);
+
+        // If there is a continue statement, put label at the end of the body
+        if (hasContinue) {
+            output.addLabel(continueLabel);
+        }
+        
         output.addBranchInstruction(GOTO, testLabel);
         output.addLabel(endLabel);
 
