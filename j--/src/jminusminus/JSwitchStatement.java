@@ -1,5 +1,6 @@
 package jminusminus;
 
+import static jminusminus.CLConstants.GOTO;
 import static jminusminus.CLConstants.LOOKUPSWITCH;
 import static jminusminus.CLConstants.TABLESWITCH;
 
@@ -27,7 +28,7 @@ class JSwitchStatement extends JStatement {
 
     private int nLabels = 0;
 
-    private int opcode;
+    private int opcode = TABLESWITCH;
 
     /**
      * Constructs an AST node for a switch-statement.
@@ -79,13 +80,13 @@ class JSwitchStatement extends JStatement {
             for (SwitchStatementGroup group : switchStmtGroups) {
                 // Loop through all labels, analyze them and confirm they are integers.
                 for (JExpression label : group.getSwitchLabels()) {
-                    // Increment the total number of labels
-                    nLabels ++;
-
-                    // The only situation where label is null is for the default case:
-                    if (label == null) {
+                     // The only situation where label is null is for the default case:
+                     if (label == null) {
                         continue;
                     }
+
+                    // Increment the total number of labels
+                    nLabels ++;
 
                     // Analyze label and verify it is an int.
                     label = label.analyze(localContext);
@@ -132,13 +133,38 @@ class JSwitchStatement extends JStatement {
         if (hasBreak) {
             breakLabel = output.createLabel();
         }
-
+        String defaultLabel = output.createLabel();
+        String endSwitch = output.createLabel();
         if (opcode == TABLESWITCH) {
-            
+            ArrayList<String> labels = new ArrayList<String>();
+            for (int i = 0; i < nLabels; i++) {
+                labels.add(output.createLabel());
+            }
+            output.addTABLESWITCHInstruction(defaultLabel, lo, hi, labels);
+            int i = 0;
+            if (switchStmtGroups != null) {
+                for (SwitchStatementGroup group : switchStmtGroups) {
+                    for (JExpression label : group.getSwitchLabels()) {
+                        if (label == null) {
+                            output.addLabel(defaultLabel);
+                        } else {
+                            output.addLabel(labels.get(i));
+                            i++;
+                        }
+                    }
+                    if (group.block() != null) {
+                        for (JStatement block : group.block()) {
+                            block.codegen(output);
+                        }
+                        output.addBranchInstruction(GOTO, endSwitch);
+                    }
+                }
+            }
         } else if (opcode == LOOKUPSWITCH) {
 
         }
-        
+
+        output.addLabel(endSwitch);
         if (hasBreak) {
             output.addLabel(breakLabel);
         }
