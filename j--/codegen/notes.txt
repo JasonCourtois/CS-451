@@ -3,33 +3,121 @@ problem along with any issues you encountered and if/how you managed to solve th
 
 [ Problem 1 (Operators)]
 
-Goal: ... 
+Goal: Add analysis and code generation for several operators in our j-- compiler
 
-Approach: ... 
+Approach: To add support for the -= *= /= %= != >= < || ++ -- operators, this involved
+modifying multiple files. Firstly, I needed to modify several classes to add support for 
+longs and doubles as I implemented these new operators in parser/scanner with long and double
+support.
+
+- The following classes were modified to add support for longs and doubles:
+    - JNegateOp, JUnaryPlusOp, JPlusOp, JAssignOp, JSubtractOp, JMultiplyOp, JDivideOp, 
+      JRemainderOp, JPlusAssignOp, JComparisonExpression
+    - These modifications mostly involved changing the "expected type" case in analyze,
+      and adding if statements in codegen to make sure the correct JVM instructions was 
+      being called based on the type
+
+- The following classes were implemented to finish adding support for the above operators
+    - JMinusAssignOp, JStarAssignOp, JDivAssignOp, JRemAssignOp, JNotEqualOp, JGreaterEqualOp
+      JLessThanOp, JLogicalOrOp, JPostIncrementOp, JPreDecrementOp.
+    - In order to implement these classes correctly I referenced similar classes in the same 
+      file. For example, to implement JGreaterEqualOp I referenced JLessEqualOp and changed 
+      the conditions for when different jumps should happen. I also ensured that these implementations
+      could handle ints, longs, and doubles.
+    - After doing so, the j-- compiler is now able to handle the above operators.
 
 [Problem 2 (Long and Double Basic Types)]
 
-Goal: ... 
+Goal: Add analysis and code generation for long and double basic types in our j-- compiler.
 
-Approach: ... 
+Approach: The first step in implementing long and double literals into our compiler was to first
+implement codegen and analyze in JLiteralLong and JLiteralDouble. This simply involved setting the 
+type to either long or double in analyze, and then calling addLDCInstruction(double/long) in codegen
+to load the value. The following files then needed to be modified to fully support longs and doubles:
+
+Modified Files:
+
+- JMethodDeclaration
+    - In analyze, if the param type is found to be a long or double I increment the offset by 1,
+      since longs and doubles have an offset of 2. 
+    - In codegen, I added two extra if statements to call the correct JVM instruction if a long 
+      or double is present.
+- JConstructorDeclaration and JVariableDeclaration
+    - In each file I advance the offset by 1 to account for the size of longs and doubles.
+-JReturnStatement
+    - Here codegen was modified to call the correct JVM return instruction based on the type of expression
+- JVariable, JArrayExpression, JArrayInitializer
+    - Codegen functions were modified in order to fully support longs and doubles
 
 [Problem 3 (For Statement)]
 
-Goal: ... 
+Goal: Add analysis and codegen support for FOR statements in our j-- compiler
 
-Approach: ... 
+Approach: In order to support FOR statements, I needed to implement analyze and codegen in JForStatement.
+
+- These notes do not include the changes made later in the assignment for continue and break statements - see below for changes. 
+
+- Analyze
+    - I first create a new local context with the given context as the parent.
+    - If init JStatements are present, I call analyze on these statements.
+    - If a condition is present, I analyze that as well and ensure it is a boolean
+    - If update statements are present, I call analyze on each statement.
+    - lastly, I call analyze on the body
+- Codegen 
+    - I create two labels for the test and end label
+    - I run the init codegen once if it is present
+    - Then I place the label for testing, and run codegen for the condition if there is one.
+      This condition will jump to the end of the for loop if it is false.
+    - I then call codegen on the body and then codegen on the update if it is present.
+    - Lastly, I have a jump to the test label to start the loop again. 
 
 [Problem 4 (Break Statement)]
 
-Goal: ... 
+Goal: Add support for break statements to our for, while, switch, and do statement implementations.
 
-Approach: ... 
+Approach: To add support for break statements, I need to implement JBreakStatement and also modify JDoStatement, JForStatement, JWhileStatement,
+and JSwitchStatement.
+
+- JForStatement, JBreakStatement, JSwitchStatement, JDoStatement
+    - Created two instance variables. hasBreak - true if a break statement is present. breakLabel - String
+      that stores label where break statement needs to jump to
+    - I also created two simple helper functions in each class
+        - hasBreak() - returns void and sets hasBreak to true
+        - breakLabel() - returns a string of the current breakLabel
+    - I also added push this onto JMember.enclosingStatement on entry and pop it on exit of analysis.
+    - In codegen, if hasBreak is true, I create a new label and store it in breakLabel. Then, I place the label
+      at the bottom of each codegen function to ensure the break statement leaves the loop/switch statement.
+
+- Implement JBreakStatement
+    - Analyze
+        - Create an enclosing statement variable and set it with the value returned by: JMember.enclosingStatement.peek();
+        - Check to see if the enclosingStatement is one of the following: JForStatement, JBreakStatement, JSwitchStatement, JDoStatement
+        - Set the hasBreak variable to true by calling the helper function.
+    - Codegen
+      - Once again check to ensure that the enclosing statement is one of: JForStatement, JBreakStatement, JSwitchStatement, JDoStatement
+      - Get the breakLabel from the enclosing statement by calling the breakLabel helper function
+      - Preform an unconditional jump to that label 
 
 [Problem 5 (Continue Statement)]
 
-Goal: ... 
+Goal: Add support for continue statements to our for, while, and do implementations
 
-Approach: ... 
+Approach: To add support for continue statements I need to implement, JContinueStatement and also modify JDoStatement, JForStatement, JWhileStatement
+
+- JForStatement, JBreakStatement, JDoStatement
+  - Here the changes are extremely similar to the changes made for a break statement
+  - I created two local variables, one to store if a continue is present, and one to store the label string
+  - I also create to simple helper functions to each class
+    - hasContinue() - sets hasContinue boolean to true
+    - breakLabel() - returns the break label string
+    - In codegen if hasContinue is true, I generate a new label and store it in continueLabel.
+    - I then place the continue label right after calling codegen on the body of the code. 
+    - This ensures that conditions and updates are handled properly.
+
+- Implement JContinueStatement
+  - This was essentially identical to JBreakStatement, except I only check if the enclosingStatement is of type:
+    JForStatement, JBreakStatement, or JDoStatement (no JSwitchStatement)
+  - In analyze I set hasContinue to true, and in codegen I make an unconditional jump to the label returned by hasLabel() 
 
 [Problem 6 (Switch Statement)]
 
