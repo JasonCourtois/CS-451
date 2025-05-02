@@ -168,18 +168,14 @@ class JLogicalOrOp extends JBooleanBinaryExpression {
             rhs.codegen(output, targetLabel, true);
         } else {
             // In the case of !(lhs || rhs), we jump to target label if both sides are false
-            // First we check if the lhs is false, and jump to 'firstFalse'. 
-            // In 'firstFalse', we check if rhs is also false, and if it is we jump to target label. 
-            // Otherwise we jump to the false label after checking LHS.
+            // First we check if the lhs is true, and jump to 'falseLabel'. 
 
-            // Jump to this label if lhs is false
-            String firstFalse = output.createLabel();
             // Jump to this label if lhs is true
             String falseLabel = output.createLabel();
 
-            lhs.codegen(output, firstFalse, false);
-            output.addBranchInstruction(GOTO, falseLabel);
-            output.addLabel(firstFalse);
+            // If lhs is true, then jump to falseLabel
+            lhs.codegen(output, falseLabel, true);
+            // If lhs is false and rhs is false, jump to target. Otherwise continue to falseLabel.
             rhs.codegen(output, targetLabel, false);
             output.addLabel(falseLabel);
         }

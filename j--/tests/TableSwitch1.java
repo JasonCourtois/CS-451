@@ -18,6 +18,11 @@ public class TableSwitch1 {
             default:
                 monthString = "default";
                 break;
+            case 5:
+                monthString = "5";
+        
+            // Case 3: goto default
+
 
         }
         System.out.println(monthString);

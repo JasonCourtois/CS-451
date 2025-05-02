@@ -16,20 +16,25 @@ class JSwitchStatement extends JStatement {
     // List of switch-statement groups.
     private ArrayList<SwitchStatementGroup> switchStmtGroups;
 
-    // Determines if a break is present
+    // Determines if a break is present.
     private boolean hasBreak;
 
-    // Stores the name of the break label
+    // Stores the name of the break label.
     private String breakLabel;
 
+    // Stores the highest switch case value.
     private int hi = Integer.MIN_VALUE;
 
+    // Stores the lowest switch case value.
     private int lo = Integer.MAX_VALUE;
 
+    // Stores the number of labels
     private int nLabels = 0;
 
+    // Tracks if the switch statement has a default case.
     private boolean hasDefault = false;
 
+    // Stores the opcode to be used with this switch statement
     private int opcode = 0;
 
     /**
@@ -107,8 +112,8 @@ class JSwitchStatement extends JStatement {
 
                 // If there are block statements present, analyze them as well.
                 if (group.block() != null) {
-                    for (JStatement block : group.block()) {
-                        block.analyze(localContext);
+                    for (JStatement statement : group.block()) {
+                        statement.analyze(localContext);
                     }
                 }
             }
@@ -119,10 +124,8 @@ class JSwitchStatement extends JStatement {
                 lo = 0;
                 hi = 0;
                 opcode = TABLESWITCH;
-            } else if (nLabels == 0 && !hasDefault) {
-                // If there is no label or no default, our switch statement is empty - assign opcode to be 0.
-                opcode = 0;
-            } else {
+            } else if (nLabels != 0) {
+                // If there is at least one real label,
                 // Compute the correct opcode that must be used for this switch statement
                 long tableSpaceCost = 5 + hi - lo ;
                 long tableTimeCost = 3;
@@ -209,8 +212,8 @@ class JSwitchStatement extends JStatement {
             }
             // If block() isn't null, run codegen on the blocks of code.
             if (group.block() != null) {
-                for (JStatement block : group.block()) {
-                    block.codegen(output);
+                for (JStatement statement : group.block()) {
+                    statement.codegen(output);
                 }
             }
         }
@@ -253,7 +256,7 @@ class JSwitchStatement extends JStatement {
         for (SwitchStatementGroup group : switchStmtGroups) {
             for (JExpression label : group.getSwitchLabels()) {
                 if (label == null) {
-                    if (nLabels == 0 && hasDefault) {
+                    if (nLabels == 0) {
                         // Edge Case: there is only a default label, no other labels in switch present.
                         // In this case there will only be one label in the labels array list.
                         // Place that label above the default label to satisfy requirements of addTABLESWITCHInstruction
@@ -279,8 +282,8 @@ class JSwitchStatement extends JStatement {
                 }
             }
             if (group.block() != null) {
-                for (JStatement block : group.block()) {
-                    block.codegen(output);
+                for (JStatement statement : group.block()) {
+                    statement.codegen(output);
                 }
             }
         }
