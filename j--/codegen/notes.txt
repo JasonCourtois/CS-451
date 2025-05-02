@@ -305,9 +305,6 @@ talking about the local variables and analysis. Then I will discuss the two main
 Source                               Help Received
 ------                               -------------
 
-...                                  ...
-
 3. List any other comments here. Feel free to provide any feedback on how much you learned from
 doing the assignment, and whether you enjoyed doing it.
 
-...
