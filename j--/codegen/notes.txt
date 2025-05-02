@@ -83,7 +83,27 @@ support.
       - Otherwise, I analyze the operand and verify the type is an INTEGER. 
       - I then set the resulting type to an integer.
     - Codegen of PreDecrementOp
-      -
+      - Case where operand is a local variable:
+        - Get the offset for this variable
+        - call output.addIINCInstruction with the offset that was obtained and -1
+        - If it isn't a statement Expression, call codegen on its original value
+      - Otherwise
+        - I first load the values using codegenLoadLhsLvalue and codegenLoadLhsRvalue
+        - I then call addNoArgInstruction(ICONST_1)
+        - Then I add the ISUB instruction to output
+        - If it isn't a statement Expression, call codegen on its original value
+        - Then I call codegenStore on the output.
+    - Codegen of PostIncrementOp
+      - Case where operand is a local variable:
+        - Get the offset for this variable
+        - If it isn't a statement Expression, call codegen on its original value
+        - call output.addIINCInstruction with the offset that was obtained and 1
+      - Otherwise
+        - I first load the values using codegenLoadLhsLvalue and codegenLoadLhsRvalue
+        - I then call addNoArgInstruction(ICONST_1)
+        - If it isn't a statement Expression, call codegen on its original value
+        - Then I add the IADD instruction to output
+        - Then I call codegenStore on the output.
 - After doing so, the j-- compiler is now able to handle the above operators.
 
 [Problem 2 (Long and Double Basic Types)]
