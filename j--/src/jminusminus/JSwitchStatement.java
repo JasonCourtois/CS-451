@@ -4,6 +4,7 @@ import static jminusminus.CLConstants.LOOKUPSWITCH;
 import static jminusminus.CLConstants.TABLESWITCH;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 /**
  * The AST node for a switch-statement.
@@ -168,11 +169,51 @@ class JSwitchStatement extends JStatement {
         }
     }
 
-     /**
+    /**
      * {@inheritDoc}
      */
-    public void lookupSwitch(CLEmitter output, String endLabel) { 
+    public void lookupSwitch(CLEmitter output, String endLabel) {
+        // Tree map object to store switch label and jump label pairs.
+        TreeMap<Integer, String> matchLabelPairs = new TreeMap<Integer, String>();
 
+        // Loop through labels to create matchLabelPairs
+        for (SwitchStatementGroup group : switchStmtGroups) {
+            for (JExpression label : group.getSwitchLabels()) {
+                // Ignore default label
+                if (label != null) {
+                    // Set the key as the switch label as an integer, and create a new label for this key.
+                    matchLabelPairs.put(((JLiteralInt) label).toInt(), output.createLabel());
+                }
+            }
+        }
+
+        // Create a default label for this switch statement.
+        String defaultLabel = output.createLabel();
+
+        // If it has a default case, use the new default label. Otherwise use the end label at the end of the switch statement.
+        if (hasDefault) {
+            output.addLOOKUPSWITCHInstruction(defaultLabel, nLabels, matchLabelPairs);
+        } else {
+            output.addLOOKUPSWITCHInstruction(endLabel, nLabels, matchLabelPairs);
+        }
+
+        // Loop through each group - we know this isn't null as the opcode was set to LOOKUPSWITCH
+        for (SwitchStatementGroup group : switchStmtGroups) {
+            // Add the default label or corresponding label from matchLabelPairs
+            for (JExpression label : group.getSwitchLabels()) {
+                if (label == null) {
+                    output.addLabel(defaultLabel);
+                } else {
+                    output.addLabel(matchLabelPairs.get(((JLiteralInt) label).toInt()));
+                }
+            }
+            // If block() isn't null, run codegen on the blocks of code.
+            if (group.block() != null) {
+                for (JStatement block : group.block()) {
+                    block.codegen(output);
+                }
+            }
+        }
     }
 
     /**
