@@ -1,6 +1,5 @@
 package jminusminus;
 
-import static jminusminus.CLConstants.GOTO;
 import static jminusminus.CLConstants.LOOKUPSWITCH;
 import static jminusminus.CLConstants.TABLESWITCH;
 
@@ -28,7 +27,9 @@ class JSwitchStatement extends JStatement {
 
     private int nLabels = 0;
 
-    private int opcode = TABLESWITCH;
+    private boolean hasDefault = false;
+
+    private int opcode = 0;
 
     /**
      * Constructs an AST node for a switch-statement.
@@ -71,7 +72,7 @@ class JSwitchStatement extends JStatement {
 
 
         // Analyze the condition and verify that it is an integer.
-        condition = condition.analyze(localContext);
+        condition.analyze(localContext);
         condition.type().mustMatchExpected(line, Type.INT);
 
         // First check if there are switch statement groups present.
@@ -82,14 +83,15 @@ class JSwitchStatement extends JStatement {
                 for (JExpression label : group.getSwitchLabels()) {
                      // The only situation where label is null is for the default case:
                      if (label == null) {
+                        hasDefault = true;
                         continue;
                     }
 
                     // Increment the total number of labels
-                    nLabels ++;
+                    nLabels++;
 
                     // Analyze label and verify it is an int.
-                    label = label.analyze(localContext);
+                    label.analyze(localContext);
                     label.type().mustMatchExpected(line, Type.INT);
 
                     // Get the value of the integer, then compare it to the hi and lo values.
@@ -110,14 +112,26 @@ class JSwitchStatement extends JStatement {
                 }
             }
 
-            // Compute the correct opcode that must be used for this switch statement
-            long tableSpaceCost = 5 + hi - lo ;
-            long tableTimeCost = 3;
-            long lookupSpaceCost = 3 + 2 * nLabels ;
-            long lookupTimeCost = nLabels ;
-            opcode = nLabels > 0 &&
-            ( tableSpaceCost + 3 * tableTimeCost <= lookupSpaceCost + 3 * lookupTimeCost ) ?
-            TABLESWITCH : LOOKUPSWITCH ;
+            // Edge Case: there is ONLY a default case present in the switch statement
+            if (nLabels == 0 && hasDefault) {
+                // Set hi and lo to 0 to only create one excess label - this edgecase is handled in tableSwitch() method
+                lo = 0;
+                hi = 0;
+                opcode = TABLESWITCH;
+            } else if (nLabels == 0 && !hasDefault) {
+                // If there is no label or no default, our switch statement is empty - assign opcode to be 0.
+                opcode = 0;
+            } else {
+                // Compute the correct opcode that must be used for this switch statement
+                long tableSpaceCost = 5 + hi - lo ;
+                long tableTimeCost = 3;
+                long lookupSpaceCost = 3 + 2 * nLabels ;
+                long lookupTimeCost = nLabels ;
+                opcode = nLabels > 0 &&
+                ( tableSpaceCost + 3 * tableTimeCost <= lookupSpaceCost + 3 * lookupTimeCost ) ?
+                TABLESWITCH : LOOKUPSWITCH ;
+            }
+            
         }
 
         // Pop this instance into JMember enclosing statement
@@ -133,40 +147,94 @@ class JSwitchStatement extends JStatement {
         if (hasBreak) {
             breakLabel = output.createLabel();
         }
-        String defaultLabel = output.createLabel();
-        String endSwitch = output.createLabel();
+
+        // Run codegen on the condition of our switch statement
+        condition.codegen(output);
+
+        // Create an end label to jump to. This label is used if there is no default case present.
+        String endLabel = output.createLabel();
+    
         if (opcode == TABLESWITCH) {
-            ArrayList<String> labels = new ArrayList<String>();
-            for (int i = 0; i < nLabels; i++) {
-                labels.add(output.createLabel());
-            }
-            output.addTABLESWITCHInstruction(defaultLabel, lo, hi, labels);
-            int i = 0;
-            if (switchStmtGroups != null) {
-                for (SwitchStatementGroup group : switchStmtGroups) {
-                    for (JExpression label : group.getSwitchLabels()) {
-                        if (label == null) {
-                            output.addLabel(defaultLabel);
-                        } else {
-                            output.addLabel(labels.get(i));
-                            i++;
-                        }
-                    }
-                    if (group.block() != null) {
-                        for (JStatement block : group.block()) {
-                            block.codegen(output);
-                        }
-                        output.addBranchInstruction(GOTO, endSwitch);
-                    }
-                }
-            }
+            tableSwitch(output, endLabel);
         } else if (opcode == LOOKUPSWITCH) {
 
         }
+        
+        // Place end label at the end of the switch statement.
+        output.addLabel(endLabel);
 
-        output.addLabel(endSwitch);
         if (hasBreak) {
             output.addLabel(breakLabel);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void tableSwitch(CLEmitter output, String endLabel) {
+        ArrayList<String> labels = new ArrayList<String>();
+        ArrayList<Boolean> labelsUsed = new ArrayList<Boolean>();
+
+        // Creates a range of labels
+        for (int i = 0; i <= (hi - lo); i++) {
+            labels.add(output.createLabel());
+            labelsUsed.add(false);
+        }
+
+        // Need to loop through labels to see which ones are used or not.
+        // This list will be used to determine what excess labels must be placed before the default label.
+        for (SwitchStatementGroup group : switchStmtGroups) {
+            for (JExpression label : group.getSwitchLabels()) {
+                if (label != null) {
+                    labelsUsed.set(((JLiteralInt) label).toInt() - lo, true);
+                }
+            }
+        }
+
+        String defaultLabel = output.createLabel();
+
+        // If there is a default statement, use the default label.
+        if (hasDefault) {
+            output.addTABLESWITCHInstruction(defaultLabel, lo, hi, labels);
+        } else {
+            // Otherwise, use the end label that is present at the end of the switch statement.
+            output.addTABLESWITCHInstruction(endLabel, lo, hi, labels);
+        }
+        
+        // Loop through each group - we know this isn't null as this method should only be called once opcode TABLESWITCH is chosen.
+        for (SwitchStatementGroup group : switchStmtGroups) {
+            for (JExpression label : group.getSwitchLabels()) {
+                if (label == null) {
+                    if (nLabels == 0 && hasDefault) {
+                        // Edge Case: there is only a default label, no other labels in switch present.
+                        // In this case there will only be one label in the labels array list.
+                        // Place that label above the default label to satisfy requirements of addTABLESWITCHInstruction
+                        // Essentially, our generated code looks like:
+                        // case 0:
+                        // default:
+                        //   {body.codgen code}
+                        output.addLabel(labels.get(0));
+                        labelsUsed.set(0, true);
+                    }
+
+                    // Here, any unused labels are placed right before the default label.
+                    // Unused labels occur when the labels follow a pattern such as case 1, case 2, case 4.
+                    // In this example, table switch will be selected and case 3 is unused.
+                    for (int i = 0; i <= (hi - lo); i++) {
+                        if (!labelsUsed.get(i)) {
+                            output.addLabel(labels.get(i));
+                        }
+                    }
+                    output.addLabel(defaultLabel);
+                } else {
+                    output.addLabel(labels.get(((JLiteralInt) label).toInt() - lo));
+                }
+            }
+            if (group.block() != null) {
+                for (JStatement block : group.block()) {
+                    block.codegen(output);
+                }
+            }
         }
     }
 

@@ -1,0 +1,219 @@
+{
+    "JCompilationUnit:1":
+    {
+        "source": ".\tests\TableSwitch.java",
+        "imports": ["java.lang.Integer", "java.lang.System"],
+        "CompilationUnitContext":
+        {
+            "entries": ["Integer", "java.lang.System", "TableSwitch", "Object", "java.lang.Object", "String", "java.lang.String", "java.lang.Integer", "System"]
+        },
+        "JClassDeclaration:4":
+        {
+            "modifiers": ["public"],
+            "name": "TableSwitch",
+            "super": "java.lang.Object",
+            "ClassContext":
+            {
+            },
+            "JMethodDeclaration:5":
+            {
+                "modifiers": ["public", "static"],
+                "returnType": "void",
+                "name": "main",
+                "parameters": [["args", "java.lang.String[]"]],
+                "MethodContext":
+                {
+                    "entries": [["args", "0"]]
+                },
+                "JBlock:5":
+                {
+                    "LocalContext":
+                    {
+                        "entries": [["month", "1"], ["monthString", "2"]]
+                    },
+                    "JVariableDeclaration:6":
+                    {
+                        "JVariableDeclarator:6":
+                        {
+                            "name": "month",
+                            "type": "int",
+                            "Initializer":
+                            {
+                                "JMessageExpression:6":
+                                {
+                                    "ambiguousPart": "Integer",
+                                    "name": "parseInt",
+                                    "Target":
+                                    {
+                                        "JVariable:6":
+                                        {
+                                            "name": "Integer",
+                                            "type": "java.lang.Integer"
+                                        }
+                                    },
+                                    "Argument":
+                                    {
+                                        "JArrayExpression:6":
+                                        {
+                                            "TheArray":
+                                            {
+                                                "JVariable:6":
+                                                {
+                                                    "name": "args",
+                                                    "type": "java.lang.String[]"
+                                                }
+                                            },
+                                            "TheIndex":
+                                            {
+                                                "JLiteralInt:6":
+                                                {
+                                                    "type": "int",
+                                                    "value": "0"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "JVariableDeclaration:7":
+                    {
+                        "JVariableDeclarator:7":
+                        {
+                            "name": "monthString",
+                            "type": "String",
+                            "Initializer":
+                            {
+                                "JLiteralString:7":
+                                {
+                                    "type": "java.lang.String",
+                                    "value": "Nope"
+                                }
+                            }
+                        }
+                    },
+                    "JSwitchStatement:8":
+                    {
+                        "Condition":
+                        {
+                            "JVariable:8":
+                            {
+                                "name": "month",
+                                "type": "int"
+                            }
+                        },
+                        "SwitchStatementGroup":
+                        {
+                            "Case":
+                            {
+                                "JLiteralInt:9":
+                                {
+                                    "type": "int",
+                                    "value": "1"
+                                }
+                            },
+                            "JStatementExpression:10":
+                            {
+                                "JBinaryExpression:10":
+                                {
+                                    "operator": "=",
+                                    "type": "java.lang.String",
+                                    "Operand1":
+                                    {
+                                        "JVariable:10":
+                                        {
+                                            "name": "monthString",
+                                            "type": "java.lang.String"
+                                        }
+                                    },
+                                    "Operand2":
+                                    {
+                                        "JLiteralString:10":
+                                        {
+                                            "type": "java.lang.String",
+                                            "value": "January"
+                                        }
+                                    }
+                                }
+                            },
+                            "JBreakStatement:11":
+                            {
+                            }
+                        },
+                        "SwitchStatementGroup":
+                        {
+                            "Case":
+                            {
+                                "JLiteralInt:12":
+                                {
+                                    "type": "int",
+                                    "value": "2"
+                                }
+                            },
+                            "JStatementExpression:13":
+                            {
+                                "JBinaryExpression:13":
+                                {
+                                    "operator": "=",
+                                    "type": "java.lang.String",
+                                    "Operand1":
+                                    {
+                                        "JVariable:13":
+                                        {
+                                            "name": "monthString",
+                                            "type": "java.lang.String"
+                                        }
+                                    },
+                                    "Operand2":
+                                    {
+                                        "JLiteralString:13":
+                                        {
+                                            "type": "java.lang.String",
+                                            "value": "February"
+                                        }
+                                    }
+                                }
+                            },
+                            "JBreakStatement:14":
+                            {
+                            }
+                        }
+                    },
+                    "JStatementExpression:16":
+                    {
+                        "JMessageExpression:16":
+                        {
+                            "ambiguousPart": "System.out",
+                            "name": "println",
+                            "Target":
+                            {
+                                "JFieldSelection:16":
+                                {
+                                    "ambiguousPart": "null",
+                                    "name": "out",
+                                    "Target":
+                                    {
+                                        "JVariable:16":
+                                        {
+                                            "name": "System",
+                                            "type": "java.lang.System"
+                                        }
+                                    }
+                                }
+                            },
+                            "Argument":
+                            {
+                                "JVariable:16":
+                                {
+                                    "name": "monthString",
+                                    "type": "java.lang.String"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
