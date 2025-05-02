@@ -157,7 +157,7 @@ class JSwitchStatement extends JStatement {
         if (opcode == TABLESWITCH) {
             tableSwitch(output, endLabel);
         } else if (opcode == LOOKUPSWITCH) {
-
+            lookupSwitch(output, endLabel);
         }
         
         // Place end label at the end of the switch statement.
@@ -166,6 +166,13 @@ class JSwitchStatement extends JStatement {
         if (hasBreak) {
             output.addLabel(breakLabel);
         }
+    }
+
+     /**
+     * {@inheritDoc}
+     */
+    public void lookupSwitch(CLEmitter output, String endLabel) { 
+
     }
 
     /**
@@ -217,7 +224,7 @@ class JSwitchStatement extends JStatement {
                         labelsUsed.set(0, true);
                     }
 
-                    // Here, any unused labels are placed right before the default label.
+                    // If a default case is present: any unused labels are placed right before the default label.
                     // Unused labels occur when the labels follow a pattern such as case 1, case 2, case 4.
                     // In this example, table switch will be selected and case 3 is unused.
                     for (int i = 0; i <= (hi - lo); i++) {
@@ -233,6 +240,15 @@ class JSwitchStatement extends JStatement {
             if (group.block() != null) {
                 for (JStatement block : group.block()) {
                     block.codegen(output);
+                }
+            }
+        }
+
+        // If no default label is present, place unused labels at end of switch statement.
+        if (!hasDefault) {
+            for (int i = 0; i <= (hi - lo); i++) {
+                if (!labelsUsed.get(i)) {
+                    output.addLabel(labels.get(i));
                 }
             }
         }

@@ -17,6 +17,7 @@ public class TableSwitch1 {
                 break;
             default:
                 monthString = "default";
+                break;
 
         }
         System.out.println(monthString);
